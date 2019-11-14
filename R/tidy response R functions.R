@@ -1,3 +1,8 @@
+#' @title python bounds to df
+#' @description convert python bounds object to tidy dataframe
+#' @param bounds python bounds option
+#' @param feature what type of features, py$FEATURE class
+#' @export
 bounds_to_df <- function(bounds, feature) {
   1:length(bounds) %>%
     purrr::map_df(function(x) {
@@ -17,6 +22,10 @@ bounds_to_df <- function(bounds, feature) {
     })
 }
 
+#' @title python words object to df
+#' @description convert python words object to tidy dataframe
+#' @param obj python word level info object
+#' @export
 strcture_words <- function(obj){
   obj %>% purrr::map_df(function(x) {
     names(x) <- c('text', 'confidence');
