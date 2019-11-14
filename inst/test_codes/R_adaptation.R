@@ -27,19 +27,21 @@ content <-  image_file1$read()
 content_image <-  types$Image(content=content)
 
 ###run api
-response = client$document_text_detection(image=content_image)
-document = response$full_text_annotation
+# response = client$document_text_detection(image=content_image)
+# document = response$full_text_annotation
 
+###pull from archived object, save $$$$
+document <- py_load_object('inst/data/bank statement resp.pyobj')
 parsed_txt <- document$text
 
-bounds_blocks <-  py$get_document_bounds(document, py$FeatureType$BLOCK) %>%
+bounds_blocks <-  get_document_bounds(document, FeatureType$BLOCK) %>%
   bounds_to_df('block')
 
-bounds_paragraph <-  py$get_document_bounds(document, py$FeatureType$PARA) %>%
+bounds_paragraph <-  get_document_bounds(document, FeatureType$PARA) %>%
   bounds_to_df('PARA')
 
-bounds_words <- py$get_document_bounds(document, py$FeatureType$WORD) %>%
+bounds_words <- get_document_bounds(document, FeatureType$WORD) %>%
   bounds_to_df('WORD')
 
-words_content <- py$get_words_content(document) %>%
+words_content <- get_words_content(document) %>%
   strcture_words()
