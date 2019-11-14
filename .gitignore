@@ -4,3 +4,8 @@
 .Ruserdata
 .png
 .pdf
+*.png
+*.pdf
+*.json
+*.Rproj
+*.pyobj
