@@ -34,6 +34,20 @@ def assemble_word(word):
     return assembled_word
 
 #document is result of the vision api
+def get_doc_content(document):
+    blocks = []
+    for i,page in enumerate(document.pages):
+        for block in page.blocks:
+            paragraphs = []
+            for paragraph in block.paragraphs:
+                words = []
+                for word in paragraph.words:
+                        words.append([assemble_word(word), word.confidence, word.property, word.bounding_box])
+                paragraphs.append(words)
+            blocks.append(paragraphs)
+    return blocks
+
+#document is result of the vision api
 def get_words_content(document) :
     words = []
     for i,page in enumerate(document.pages):
