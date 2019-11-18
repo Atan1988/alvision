@@ -11,3 +11,4 @@
 *.pyobj
 *.jpg
 *.rds
+inst/test_codes
