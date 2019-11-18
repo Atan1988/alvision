@@ -17,6 +17,11 @@ Imports:
     stringr,
     reticulate,
     purrrlyr,
-    tidyr
+    tidyr,
+    magrittr
 Depends: 
     zeallot
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
