@@ -42,6 +42,7 @@ def get_doc_content(document):
             for paragraph in block.paragraphs:
                 words = []
                 for word in paragraph.words:
+                        symbols = []
                         words.append([assemble_word(word), word.confidence, word.property, word.bounding_box])
                 paragraphs.append(words)
             blocks.append(paragraphs)

@@ -13,3 +13,5 @@ RoxygenNote: 6.1.1
 Imports: 
     googleAuthR,
     pdftools
+Depends: 
+    zeallot
