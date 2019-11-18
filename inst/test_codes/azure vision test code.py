@@ -24,7 +24,7 @@ vision_base_url = endpoint + "vision/v2.0/"
 text_recognition_url = vision_base_url + "recognizeText"
 #%%
 # Set image_path to the local path of an image that you want to analyze.
-image_path = "C:/Users/allen/Documents/GitHub/alvision/inst/data/cropped/6.png"
+image_path = "C:/Users/allen/Documents/GitHub/alvision/inst/data/cropped/36b.png"
 
 # Read the image into a byte array
 image_data = open(image_path, "rb").read()
@@ -54,7 +54,6 @@ poll = True
     response_final = requests.get(
         response.headers["Operation-Location"], headers=headers)
     analysis = response_final.json()
-#%%
     print(analysis)
 #%%
     ("recognitionResult" in analysis)

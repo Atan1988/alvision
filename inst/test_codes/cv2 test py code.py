@@ -82,12 +82,13 @@ for c in contours:
    x, y, w, h = cv2.boundingRect(c)
    # If the box height is greater then 20, widht is >80, then only save it as a box in "cropped/" folder.
    #if (w > 80 and h > 20) and w > 3*h:
-   X.append(x)
-   Y.append(y)
-   W.append(w)
-   H.append(h)
-   #idx += 1
-   #new_img = img[y:y+h, x:x+w]
-   #cv2.imwrite(cropped_dir_path+str(idx) + '.png', new_img)
+   if (h < 100):
+    X.append(x)
+    Y.append(y)
+    W.append(w)
+    H.append(h)
+    idx += 1
+    new_img = img[y:y+h, x:x+w]
+    cv2.imwrite(cropped_dir_path+str(idx) + '.png', new_img)
 
 

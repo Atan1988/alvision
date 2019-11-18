@@ -18,7 +18,7 @@ cv2 <- import('cv2')
 np <- import('numpy')
 
 #image_file <- 'inst/raw_data/ACE Contrractors Pollution_2.png'
-image_file <- 'inst/data/cropped/21.png'
+image_file <- 'inst/data/cropped/15.png'
 image  <-  Image$open(normalizePath(image_file))
 
 info <- jsonlite::read_json('C:/Users/allen/Documents/anna-service account cred.json')
