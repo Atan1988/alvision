@@ -12,3 +12,4 @@
 *.jpg
 *.rds
 inst/test_codes
+inst/test_example_scripts
