@@ -2,6 +2,8 @@
 
 export(bounds_to_df)
 export(fix_str_bankstatement)
+export(get_ocr_azure)
+export(ocr_img_wrapper)
 export(parse_coord)
 export(parser_std)
 export(strcture_doc)

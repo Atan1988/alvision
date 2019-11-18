@@ -14,11 +14,14 @@ PIL <- import('PIL')
 Image <- PIL$Image
 ImageDraw <- PIL$ImageDraw
 enum <- import('enum')$Enum
+cv2 <- import('cv2')
+np <- import('numpy')
 
-image_file <- '~/800px-Wachovia_National_Bank_1906_statement.jpg'
+#image_file <- 'inst/raw_data/ACE Contrractors Pollution_2.png'
+image_file <- 'inst/data/cropped/21.png'
 image  <-  Image$open(normalizePath(image_file))
 
-info <- jsonlite::read_json('C:/Users/allen/Documents/tranlator-95964dd00b2f.json')
+info <- jsonlite::read_json('C:/Users/allen/Documents/anna-service account cred.json')
 credentials <-  service_account$Credentials$from_service_account_info(info)
 
 client = vision$ImageAnnotatorClient(credentials=credentials)
@@ -28,17 +31,21 @@ content_image <-  types$Image(content=content)
 
 
 ###run api
-# response = client$document_text_detection(image=content_image)
-# document = response$full_text_annotation
+#response = client$document_text_detection(image=content_image)
+response <- client$text_detection(image=content_image,
+                                  image_context=list("language_hints"= "en"))
+document = response$full_text_annotation
+reticulate::py_save_object(document, 'inst/data/ace app2b.pyobj')
 
 ###pull from archived object, save $$$$
-document <- reticulate::py_load_object('inst/data/bank statement resp.pyobj')
+document <- reticulate::py_load_object('inst/data/ace app2b.pyobj')
 parsed_txt <- document$text
+parsed_txt %>% strsplit("\n")
 
 contents <- get_doc_contents(document)
 txt_structure_df <- get_doc_contents(document) %>% strcture_doc()
 
-
+txt_structure_df %>% parser_std()
 
 txt_structure_df %>% dplyr::group_by(BLOCK, PARA) %>%
   summarise(text = paste(text, collapse = " ")) %>%

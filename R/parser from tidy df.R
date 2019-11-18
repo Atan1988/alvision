@@ -12,6 +12,6 @@ parser_std <- function(df){
     dplyr::mutate(
       y_3a = ceiling(y_3 / mean_w_h) * mean_w_h
     ) %>% dplyr::arrange(y_3a, x_0) %>%
-    dplyr::group_by(y_3a) %>% sdplyr::ummarise(text = paste(text, collapse = " ")) %>%
+    dplyr::group_by(y_3a) %>% dplyr::summarise(text = paste(text, collapse = " ")) %>%
     dplyr::mutate(text = fix_str_bankstatement(text)) %>% View()
 }
