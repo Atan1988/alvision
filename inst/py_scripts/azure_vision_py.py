@@ -31,7 +31,7 @@ def azure_get(response, headers):
         response_final = requests.get(
               response.headers["Operation-Location"], headers=headers)
         analysis = response_final.json()
-        time.sleep(1)
+        #time.sleep(1)
         if ("recognitionResult" in analysis):
             poll = False
         if ("status" in analysis and analysis['status'] == 'Failed'):
