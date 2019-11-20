@@ -30,15 +30,8 @@ get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds) {
 #' @param azure_creds azure credential
 #' @export
 ocr_img_wrapper <- function(img_file, hmax = 100, cropped_tm_dir, azure_creds) {
-  crop_out_boxes(normalizePath(img_file), hmax) %->% c(img, img_bin, img_final_bin,
-                                                       contours, bounds, hierarchy)
-  #cv2$imwrite("Image_bin.jpg", img_bin)
-  # Sort all the contours by top to bottom.
-  #sort_contours(contours, method="top-to-bottom") %->% c(contours_sorted, boundingBoxes)
-
-  #bounds <- get_crop_bounds(contours_sorted, hmax)
-  names(bounds) <- c('x', 'y', 'w', 'h')
-  bounds_df <- bounds %>% tibble::as_tibble()
+  crop_out_boxes(img_file, hmax) %->% c(img, img_bin, img_final_bin,
+                                                       contours, bounds_df, hierarchy)
 
   des <- density(bounds_df$y, bw = 8, n = nrow(bounds_df), kernel = 'rectangular')
   des_df <- tibble::tibble(x = des$x, y = des$y) %>%

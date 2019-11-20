@@ -18,7 +18,8 @@ Imports:
     reticulate,
     purrrlyr,
     tidyr,
-    magrittr
+    magrittr,
+    purrr
 Depends: 
     zeallot
 Suggests: 
