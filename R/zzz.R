@@ -18,7 +18,7 @@ py_built <- NULL
   np <<- reticulate::import('numpy', delay_load = TRUE)
   requests <<- reticulate::import('requests', delay_load = TRUE)
   py_time <<- reticulate::import('time', delay_load = TRUE)
-  py_built <<- reticulate::import_builtins()
+  py_built <<- reticulate::import('builtins', delay_load = T)
   # py_main <<- reticulate::import_from_path('pre-process', path = 'inst/py_scripts/')
   # crop_out_boxes <<- py_main$crop_out_boxes
   # sort_contours <<-  py_main$sort_contours
