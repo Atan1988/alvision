@@ -1,7 +1,9 @@
-py_main  <- NULL
 cv2 <- NULL
 ipywidgets <- NULL
-azure_py <- NULL
+np <- NULL
+requests <- NULL
+py_time <- NULL
+py_built <- NULL
 
 .onLoad <- function(libname, pkgname) {
   # use superassignment to update global reference to scipy

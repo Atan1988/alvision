@@ -3,8 +3,9 @@
 #'@param cropped_dir_path tmp path to output cropped img
 #'@param img original image
 #'@param azure_creds credential for azure app
+#'@param remove_fl whether to remove images
 #'@export
-get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds) {
+get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds, remove_fl = T) {
   cropped_img <- output_cropped_img(normalizePath(cropped_dir_path), img,
                                     df$idx, df$x, df$y, df$w, df$h)
 
@@ -19,7 +20,7 @@ get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds) {
       h <- mean(abs(boxes[2] - boxes[8]), abs(boxes[4] - boxes[6]))
       tibble::tibble(txt = txt, x = x, y = y, w = w, h = h)
     })
-  unlink(cropped_img)
+  if(remove_fl) unlink(cropped_img)
   return(tidy_res)
 }
 

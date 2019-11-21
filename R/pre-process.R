@@ -7,9 +7,9 @@ crop_out_boxes <- function(img_file, hmax){
   img <-  cv2$imread(normalizePath(img_file), 0L) %>%
     reticulate::np_array(dtype = "uint8")
   # Thresholding the image
-  c(thresh, img_bin) %<-% cv2$threshold(img, 128, 255,cv2$THRESH_BINARY|     cv2$THRESH_OTSU)
+  c(thresh, img_bin) %<-% cv2$threshold(img, 128, 255, bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
   # Invert the image
-  #img_bin <- 255-img_bin
+  img_bin <- 255-img_bin
   # Defining a kernel length
   kernel_length <- ((np$array(img) %>% dim() %>% .[2])%/% 100) %>% as.integer()
   # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
@@ -42,12 +42,13 @@ crop_out_boxes <- function(img_file, hmax){
   img_final_bin <- cv2$erode(matrix(bitwNot(img_final_bin), nrow = dim1[1]) %>%
                                reticulate::np_array(dtype = "uint8"),
                              kernel, iterations=2L) %>% reticulate::np_array(dtype = "uint8")
-  c(thresh, img_final_bin) %<-% cv2$threshold(img_final_bin, 128,255, cv2$THRESH_BINARY | cv2$THRESH_OTSU)
-  cv2$imwrite("img_final_bin.jpg",img_final_bin)
+  c(thresh, img_final_bin) %<-% cv2$threshold(img_final_bin, 128,255,
+                                              bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
+  #cv2$imwrite("img_final_bin.jpg",img_final_bin)
   # Find contours for image, which will detect all the boxes
   c(im2, contours, hierarchy) %<-% cv2$findContours(img_final_bin%>% reticulate::np_array(dtype = "uint8"),
                                                     cv2$RETR_TREE, cv2$CHAIN_APPROX_SIMPLE)
-  c(contours, boundingBoxes) %<-% sort_contours(contours, "top-to-bottom")
+  c(contours, boundingBoxes) %<-% sort_contours(contours, "top-to-bottom", hmax = hmax)
   #bounds <-  get_crop_bounds(contours, hmax)
   return(list(img, img_bin, img_final_bin, contours, boundingBoxes, hierarchy))
 }
@@ -57,7 +58,7 @@ crop_out_boxes <- function(img_file, hmax){
 #' @param method 'left-to-right' or 'bottom-to-top'
 #' @param hmax max height to include
 #' @export
-sort_contours <- function(cnts, method="left-to-right"){
+sort_contours <- function(cnts, method="left-to-right", hmax = 100){
   # initialize the reverse flag and sort index
   reverse <-  F
   i <-  'x'

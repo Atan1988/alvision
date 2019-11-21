@@ -4,12 +4,14 @@
 \alias{sort_contours}
 \title{sort contours}
 \usage{
-sort_contours(cnts, method = "left-to-right")
+sort_contours(cnts, method = "left-to-right", hmax = 100)
 }
 \arguments{
 \item{cnts}{contours}
 
 \item{method}{'left-to-right' or 'bottom-to-top'}
+
+\item{hmax}{max height to include}
 }
 \description{
 sort contours
