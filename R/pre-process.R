@@ -13,13 +13,13 @@ crop_out_boxes <- function(img_file, hmax){
   # Defining a kernel length
   kernel_length <- ((np$array(img) %>% dim() %>% .[2])%/% 100) %>% as.integer()
   # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
-  verticle_kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, tuple(1L, kernel_length))%>%
+  verticle_kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, reticulate::tuple(1L, kernel_length))%>%
     reticulate::np_array(dtype = "uint8")
   # A horizontal kernel of (kernel_length X 1), which will help to detect all the horizontal line from the image.
-  hori_kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, tuple(kernel_length, 1L)) %>%
+  hori_kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, reticulate::tuple(kernel_length, 1L)) %>%
     reticulate::np_array(dtype = "uint8")
   # A kernel of (3 X 3) ones.
-  kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, tuple(3L, 3L)) %>%
+  kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, reticulate::tuple(3L, 3L)) %>%
     reticulate::np_array(dtype = "uint8")
   # Morphological operation to detect vertical lines from an image
   img_temp1 <- cv2$erode(img_bin%>% reticulate::np_array(dtype = "uint8"), verticle_kernel, iterations=3L)%>%
