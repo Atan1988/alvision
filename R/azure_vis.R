@@ -37,7 +37,7 @@ azure_get <- function(response, headers){
     if (i > 1) {
       print(i)
       print('sleep 1s')
-      Sys.sleep(1)
+      Sys.sleep(10)
       print(analysis)
     }
    }
