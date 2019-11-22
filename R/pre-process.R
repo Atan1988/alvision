@@ -46,7 +46,7 @@ crop_out_boxes <- function(img_file, hmax){
                                               bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
   #cv2$imwrite("img_final_bin.jpg",img_final_bin)
   # Find contours for image, which will detect all the boxes
-  c(im2, contours, hierarchy) %<-% cv2$findContours(img_final_bin%>% reticulate::np_array(dtype = "uint8"),
+  c(contours, hierarchy) %<-% cv2$findContours(img_final_bin%>% reticulate::np_array(dtype = "uint8"),
                                                     cv2$RETR_TREE, cv2$CHAIN_APPROX_SIMPLE)
   c(contours, boundingBoxes) %<-% sort_contours(contours, "top-to-bottom", hmax = hmax)
   #bounds <-  get_crop_bounds(contours, hmax)
