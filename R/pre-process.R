@@ -98,3 +98,48 @@ output_cropped_img <- function(cropped_dir_path, img, idx, x, y, w, h){
   return(paste0(cropped_dir_path, idx, '.png'))
 }
 
+
+#' @title object detection
+#' @param image_file read image in
+#' @param output_cropped whether to output cropped objects
+#' @param output_dir output cropped object to the path
+#' @export
+crop_out_obj <- function(image_file, output_cropped = F, output_dir = NULL) {
+  ###crate dir
+  if (!is.null(output_dir)) {
+    if (!dir.exists(output_dir)) dir.create(output_dir, recursive = T)
+  }
+
+  image <-  cv2$imread(normalizePath(image_file)) %>% reticulate::np_array(dtype = "uint8")
+  gray <- cv2$cvtColor(image, cv2$COLOR_BGR2GRAY) %>% reticulate::np_array(dtype = "uint8")
+  gray <-  cv2$GaussianBlur(gray, reticulate::tuple(7L, 7L), 0L) %>%
+             reticulate::np_array(dtype = "uint8")
+
+  # threshold the image
+  c(ret, thresh1) %<-% cv2$threshold(gray ,127,255,cv2$THRESH_BINARY_INV)
+
+  # dilate the white portions
+  dilate <-  cv2$dilate(thresh1 %>% reticulate::np_array(dtype = "uint8"),
+                        NULL, iterations=2L) %>% reticulate::np_array(dtype = "uint8")
+
+  # find contours in the image
+  c(cnts, hirachy) %<-% cv2$findContours(dilate$copy(), cv2$RETR_EXTERNAL, cv2$CHAIN_APPROX_SIMPLE)
+  #cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+
+  orig <-  image
+  i <-  0
+
+  for (cnt in cnts) {
+    if(cv2$contourArea(cnt) < 100) next
+    c(x1, y1, w1, h1) %<-% cv2$boundingRect(cnt)
+    # Taking ROI of the cotour
+    roi <- image %>% reticulate::py_to_r() %>% .[y1:(y1+h1), x1:(x1+w1), ] %>% np_array(dtype = 'uint8')
+    roi_new <-  cv2$resize(roi, reticulate::tuple(250L, 250L))
+
+    if(output_cropped & !is.null(output_dir)) cv2$imwrite(paste0(output_dir, i , ".png"), roi_new)
+    orig <- cv2$rectangle(orig, reticulate::tuple(x1, y1), reticulate::tuple(x1+w1, y1+h1),
+                  reticulate::tuple(0, 255, 0), 1L)
+    i = i + 1
+  }
+  cv2$imwrite(image_file, orig)
+}

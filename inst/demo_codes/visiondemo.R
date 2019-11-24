@@ -3,14 +3,30 @@ library(dplyr)
 library(zeallot)
 library(alvision)
 
-img_file = "inst\\raw_data\\ACE Contrractors Pollution_2.png"
+img_file = "inst/raw_data/ACE Contrractors Pollution_2.png"
 azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
 # Read the image
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 reticulate::use_condaenv('computer_vision')
 
-crop_out_boxes(img_file, hmax = 100) %->% c(img, img_bin, img_final_bin,
+main_img <-  'resize-full.png'
+analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
+                          endpoint = azure_creds$endpoint, image_path = normalizePath(main_img ))
+analysis_res$recognitionResult$lines -> res_lines
+match_idx <- res_lines %>% purrr::map(~pts_to_wh(.$boundingBox)) %>%
+  purrr::map(function(x) {
+    res <- bounds_list %>% purrr::map_lgl(~chk_box_in(., x, 10)) %>% which(.)
+    if (length(res) == 0) return(NA)
+    return(res)
+  })
+
+crop_out_boxes(main_img, hmax = 100) %->% c(img, img_bin, img_final_bin,
                                       contours, bounds_df, hierarchy)
+bounds_list <- bbox_df_to_c(bounds_df)
+
+cv2$imwrite('img.png', img)
+cv2$imwrite('img bin.png', img_bin)
+cv2$imwrite('img final bin.png', img_final_bin)
 
 des <- density(bounds_df$y, bw = 8, n = nrow(bounds_df), kernel = 'rectangular')
 des_df <- tibble::tibble(x = des$x, y = des$y) %>%

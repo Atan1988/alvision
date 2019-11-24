@@ -4,7 +4,7 @@
 \alias{get_ocr_azure}
 \title{get ocr from azure}
 \usage{
-get_ocr_azure(df, cropped_dir_path, img, azure_creds)
+get_ocr_azure(df, cropped_dir_path, img, azure_creds, remove_fl = T)
 }
 \arguments{
 \item{df}{the data frame with contour info}
@@ -14,6 +14,8 @@ get_ocr_azure(df, cropped_dir_path, img, azure_creds)
 \item{img}{original image}
 
 \item{azure_creds}{credential for azure app}
+
+\item{remove_fl}{whether to remove images}
 }
 \description{
 get ocr from azure

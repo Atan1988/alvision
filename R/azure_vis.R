@@ -34,10 +34,10 @@ azure_get <- function(response, headers){
     }else {
       if ((grepl("status", names(analysis)) %>% sum() >= 1) & analysis[['status']] == 'Failed') break
     }
-    if (i > 1) {
+    if (i >= 0) {
       print(i)
-      print('sleep 60s')
-      Sys.sleep(60)
+      print(paste0('sleep ', i+1, 's'))
+      Sys.sleep(i+1)
       print(analysis)
     }
    }
