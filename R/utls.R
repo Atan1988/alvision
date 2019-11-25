@@ -64,3 +64,61 @@ bbox_df_to_c  <- function(df) {
    if (length(res_list) == 1) res_list <- res_list[[1]]
    return(res_list)
 }
+
+#' @title get the column or row based on density
+#' @param x x or y vector
+#' @export
+get_col_row <- function(x) {
+  des <- density(x, bw = 8, n = length(x),
+                 kernel = 'rectangular')
+  des_df <- tibble::tibble(x = des$x, y = des$y) %>%
+    dplyr::mutate(peak = ifelse(y > dplyr::lead(y, default = 0) &
+                                  y > dplyr::lag(y, default = 0) &
+                                  y > 1e-6, 1, 0),
+                  trough = ifelse(y < dplyr::lead(y, default = 0) &
+                                    y < dplyr::lag(y, default = 0)&
+                                    y > 1e-6, 1, 0)
+    ) %>%
+    dplyr::filter(peak == 1)
+  return(des_df)
+}
+
+#' @title add row and cols to bounding box df
+#' @param bbox_df bounding box df
+#' @export
+add_rc_bbox <- function(bbox_df) {
+  rows <- get_col_row(bbox_df$y)
+  cols <- get_col_row(bbox_df$x)
+
+  bbox_df1 <- bbox_df %>%
+    dplyr::left_join(
+      purrr::cross_df(list(x = unique(bbox_df$x),
+                           col = ceiling(cols$x))) %>%
+        dplyr::group_by(x) %>%
+        dplyr::mutate(dist = abs(x-col)) %>%
+        dplyr::filter(abs(dist) == min(dist)),
+      by = "x"
+    ) %>%
+    dplyr::left_join(
+      purrr::cross_df(list(y = unique(bbox_df$y),
+                           row = ceiling(rows$x))) %>%
+        dplyr::group_by(y) %>%
+        dplyr::mutate(dist = abs(y-row)) %>%
+        dplyr::filter(abs(dist) == min(dist)),
+      by = "y"
+    ) %>%
+    dplyr::arrange(row, col) %>%
+    dplyr::group_by(row, col) %>%
+    dplyr::mutate(idx = seq(1, dplyr::n(), 1))
+
+  return(bbox_df1)
+}
+
+#' @title line areas calcualtion for azure
+#' @param line line obj returnef from azure api
+#' @export
+az_line_area  <- function(line) {
+ line$words %>% purrr::map_dbl(
+   function(x) {bbox <- x$boundingBox %>% pts_to_wh();
+                bbox[3] * bbox[4]}) %>% sum()
+}

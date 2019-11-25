@@ -30,36 +30,25 @@ match_idx <- res_lines %>% purrr::map(~pts_to_wh(.$boundingBox)) %>%
     return(res)
   })
 
-cv2$imwrite('img.png', img)
-cv2$imwrite('img bin.png', img_bin)
-cv2$imwrite('img final bin.png', img_final_bin)
 
-des <- density(bounds_df$y, bw = 8, n = nrow(bounds_df), kernel = 'rectangular')
-des_df <- tibble::tibble(x = des$x, y = des$y) %>%
-  dplyr::mutate(peak = ifelse(y > dplyr::lead(y, default = 0) & y > dplyr::lag(y, default = 0), 1, 0),
-                trough = ifelse(y < dplyr::lead(y, default = 0) & y < dplyr::lag(y, default = 0), 1, 0)
-  ) %>%
-  dplyr::filter(peak == 1)
-
-bounds_df1 <- bounds_df %>%
-  dplyr::left_join(
-    purrr::cross_df(list(y = unique(bounds_df$y),
-                         row = ceiling(des_df$x))) %>%
-      dplyr::group_by(y) %>%
-      dplyr::mutate(dist = abs(y-row)) %>%
-      dplyr::filter(abs(dist) == min(dist)),
-    by = "y"
-  ) %>%
-  dplyr::arrange(row, x) %>%
-  dplyr::group_by(row) %>%
-  dplyr::mutate(col = seq(1, dplyr::n(), 1)) %>% dplyr::ungroup() %>%
-  dplyr::mutate(idx = seq(1, dplyr::n(), 1))
+# cv2$imwrite('img.png', img)
+# cv2$imwrite('img bin.png', img_bin)
+# cv2$imwrite('img final bin.png', img_final_bin)
+bounds_df1 <- add_rc_bbox(bbox_df = bounds_df)
+bounds_df1$az <- 1:nrow(bounds_df1) %>%  purrr::map(
+  function(x) {
+    idx <- which(match_idx == x)
+    if (length(idx) == 0) return(list())
+    return(res_lines[idx])
+  }
+)
 
 pb <- dplyr::progress_estimated(nrow(bounds_df1))
 bounds_df2 <- bounds_df1 %>% .[1:10, ] %>%
   purrrlyr::by_row(
     function(row) {
-      res <- get_ocr_azure(row, cropped_dir_path = cropped_tm_dir, img, azure_creds, F)
+      res <- get_ocr_azure(row, cropped_dir_path = cropped_tm_dir,
+                           img, azure_creds, remove_fl = F)
       pb$tick()$print()
       return(res)
     }

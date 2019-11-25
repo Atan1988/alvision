@@ -3,11 +3,19 @@
 #'@param cropped_dir_path tmp path to output cropped img
 #'@param img original image
 #'@param azure_creds credential for azure app
+#'@param box_highlight whether to have the additional step of flagging the cropped image
 #'@param remove_fl whether to remove images
 #'@export
-get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds, remove_fl = T) {
+get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds,
+                          box_highlight = T, remove_fl = T) {
   cropped_img <- output_cropped_img(normalizePath(cropped_dir_path), img,
                                     df$idx, df$x, df$y, df$w, df$h)
+
+  if (box_highlight) {
+    c(flagged_img, flag_cnts) %<-% crop_out_obj(image_file = cropped_img,
+                                          output_cropped = F, output_dir = NULL)
+  }
+  cv2$imwrite(cropped_img, flagged_img)
 
   analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
                             endpoint = azure_creds$endpoint, image_path = normalizePath(cropped_img))

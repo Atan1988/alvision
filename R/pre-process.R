@@ -133,7 +133,8 @@ crop_out_obj <- function(image_file, output_cropped = F, output_dir = NULL) {
     if(cv2$contourArea(cnt) < 100) next
     c(x1, y1, w1, h1) %<-% cv2$boundingRect(cnt)
     # Taking ROI of the cotour
-    roi <- image %>% reticulate::py_to_r() %>% .[y1:(y1+h1), x1:(x1+w1), ] %>% np_array(dtype = 'uint8')
+    roi <- image %>% reticulate::py_to_r() %>% .[y1:(y1+h1), x1:(x1+w1), ] %>%
+           reticulate::np_array(dtype = 'uint8')
     roi_new <-  cv2$resize(roi, reticulate::tuple(250L, 250L))
 
     if(output_cropped & !is.null(output_dir)) cv2$imwrite(paste0(output_dir, i , ".png"), roi_new)
@@ -141,5 +142,5 @@ crop_out_obj <- function(image_file, output_cropped = F, output_dir = NULL) {
                   reticulate::tuple(0, 255, 0), 1L)
     i = i + 1
   }
-  cv2$imwrite(image_file, orig)
+  return(list(orig = orig, cnts = cnts))
 }
