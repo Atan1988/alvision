@@ -4,8 +4,14 @@
 \alias{get_ocr_azure}
 \title{get ocr from azure}
 \usage{
-get_ocr_azure(df, cropped_dir_path, img, azure_creds, box_highlight = T,
-  remove_fl = T)
+get_ocr_azure(
+  df,
+  cropped_dir_path,
+  img,
+  azure_creds,
+  box_highlight = T,
+  remove_fl = T
+)
 }
 \arguments{
 \item{df}{the data frame with contour info}
