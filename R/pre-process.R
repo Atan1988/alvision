@@ -95,7 +95,7 @@ sort_contours <- function(cnts, method="left-to-right", hmax = 100){
 output_cropped_img <- function(cropped_dir_path, img, idx, x, y, w, h){
   new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)]
   cv2$imwrite(paste0(cropped_dir_path, "\\/", idx, '.png'), new_img)
-  return(paste0(cropped_dir_path, idx, '.png'))
+  return(paste0(cropped_dir_path, "\\/", idx, '.png'))
 }
 
 
