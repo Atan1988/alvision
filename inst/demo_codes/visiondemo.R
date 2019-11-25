@@ -44,6 +44,7 @@ bounds_df1$az <- 1:nrow(bounds_df1) %>%  purrr::map(
   }
 )
 
+tictoc::tic()
 pb <- dplyr::progress_estimated(nrow(bounds_df1))
 bounds_df2 <- bounds_df1 %>% .[1:10, ] %>%
   purrrlyr::by_row(
@@ -54,7 +55,7 @@ bounds_df2 <- bounds_df1 %>% .[1:10, ] %>%
       return(res)
     }
   )
-
+tictoc::toc()
 #parse_df <- readr::read_rds('inst/data/azure parsed results/ace page2.rds')
 parse_df1 <- bounds_df2 %>%
   purrrlyr::by_row(
