@@ -108,7 +108,7 @@ add_rc_bbox <- function(bbox_df) {
       by = "y"
     ) %>%
     dplyr::arrange(row, col) %>%
-    dplyr::group_by(row, col) %>%
+    dplyr::ungroup() %>% 
     dplyr::mutate(idx = seq(1, dplyr::n(), 1))
 
   return(bbox_df1)

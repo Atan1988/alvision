@@ -7,7 +7,8 @@ img_file = "inst/raw_data/ACE Contrractors Pollution_2.png"
 azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
 # Read the image
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
-reticulate::use_condaenv('computer_vision')
+#reticulate::use_condaenv('computer_vision')
+reticulate::use_virtualenv('/opt/virtualenvs/r-tensorflow')
 
 raw_img <- magick::image_read(img_file)
 raw_img %>% magick::image_resize('3500x3500') %>%

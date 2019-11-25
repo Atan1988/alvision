@@ -14,13 +14,23 @@ get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds,
   if (box_highlight) {
     c(flagged_img, flag_cnts) %<-% crop_out_obj(image_file = cropped_img,
                                           output_cropped = F, output_dir = NULL)
+    cv2$imwrite(cropped_img, flagged_img)
+    az_area <- df$az[[1]] %>% purrr::map_dbl(az_line_area) %>% sum()
+    flag_area <- flag_cnts %>% purrr::map_dbl(~cv2$contourArea(.)) %>% sum()
+    if (az_area >= flag_area) {
+      line_res <- df$az %>% .[[1]]
+    } else {
+      analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
+                                endpoint = azure_creds$endpoint, image_path = normalizePath(cropped_img))
+      line_res <- analysis_res$recognitionResult$lines
+    }
+  } else {
+    analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
+                              endpoint = azure_creds$endpoint, image_path = normalizePath(cropped_img))
+    line_res <- analysis_res$recognitionResult$lines
   }
-  cv2$imwrite(cropped_img, flagged_img)
 
-  analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
-                            endpoint = azure_creds$endpoint, image_path = normalizePath(cropped_img))
-
-  tidy_res <- analysis_res$recognitionResult$lines %>%
+  tidy_res <- line_res %>%
     purrr::map_df(function(x){
       boxes <- x$boundingBox; txt <- x$text
       x <- boxes[1]; y <- boxes[2]
