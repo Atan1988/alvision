@@ -50,8 +50,10 @@ bounds_df2 <- bounds_df1 %>% #.[1:10, ] %>%
   purrrlyr::by_row(
     function(row) {
       print(row$idx)
-      res <- get_ocr_azure(row, cropped_dir_path = cropped_tm_dir,
-                           img, azure_creds, remove_fl = F)
+      # res <- get_ocr_azure(row, cropped_dir_path = cropped_tm_dir,
+      #                      img, azure_creds, remove_fl = F)
+      res <- post_cropped_azure(row, cropped_dir_path = cropped_tm_dir,
+                               img, azure_creds, box_highlight = F, remove_fl = F)
       Sys.sleep(0.1)
       pb$tick()$print()
       return(res)

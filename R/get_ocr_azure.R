@@ -57,33 +57,51 @@ get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds,
 #'@export
 post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds,
                                 box_highlight = T, remove_fl = T) {
+  start <- Sys.time()
   cropped_img <- output_cropped_img(normalizePath(cropped_dir_path), img,
                                     df$idx, df$x, df$y, df$w, df$h)
   
   if (box_highlight) {
+    
     c(flagged_img, flag_cnts) %<-% crop_out_obj(image_file = cropped_img,
                                                 output_cropped = F, output_dir = NULL)
     
     cv2$imwrite(cropped_img, flagged_img)
     
+    
     az_area <- df$az[[1]] %>% purrr::map_dbl(az_line_area) %>% sum()
     flag_area <- flag_cnts %>% purrr::map_dbl(~cv2$contourArea(.)) %>% sum()
+    
     if (az_area >= flag_area) {
-      line_res <- list(flag = "not run", result = df$az %>% .[[1]])
+     
+      line_res <- list(flag = "not run", result = df$az %>% .[[1]], 
+                       time = Sys.time() - start)
     } else {
+      tictoc::tic()
       line_res <- list(flag = 'run', 
                        result = azure_post(subscription_key = azure_creds$subscription_key,
                                           endpoint = azure_creds$endpoint, 
-                                          image_path = normalizePath(cropped_img))
+                                          image_path = normalizePath(cropped_img)), 
+                       time = Sys.time() - start
                        )
+      tictoc::toc()
     }
+    return(line_res)
   }  
   line_res <- list(flag = 'run', 
                    result = azure_post(subscription_key = azure_creds$subscription_key,
                                        endpoint = azure_creds$endpoint, 
-                                       image_path = normalizePath(cropped_img))
+                                       image_path = normalizePath(cropped_img)), 
+                   time = Sys.time() - start
   )
   return(line_res)
+}
+#'@title post cropped image to azure
+#'@param df the data frame with contour info
+#'@export
+get_cropped_azure <- function(res) {
+  if (res$flag == "not run") return(res$result)
+  azure_get(response = res$result[[1]], headers = res$result[[2]])$recognitionResult$lines
 }
 
 #' @title ocr image wrapper
