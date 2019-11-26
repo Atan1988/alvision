@@ -46,11 +46,13 @@ bounds_df1$az <- 1:nrow(bounds_df1) %>%  purrr::map(
 
 tictoc::tic()
 pb <- dplyr::progress_estimated(nrow(bounds_df1))
-bounds_df2 <- bounds_df1 %>% .[1:10, ] %>%
+bounds_df2 <- bounds_df1 %>% #.[1:10, ] %>%
   purrrlyr::by_row(
     function(row) {
+      print(row$idx)
       res <- get_ocr_azure(row, cropped_dir_path = cropped_tm_dir,
                            img, azure_creds, remove_fl = F)
+      Sys.sleep(0.1)
       pb$tick()$print()
       return(res)
     }

@@ -46,6 +46,46 @@ get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds,
   return(tidy_res)
 }
 
+
+#'@title post cropped image to azure
+#'@param df the data frame with contour info
+#'@param cropped_dir_path tmp path to output cropped img
+#'@param img original image
+#'@param azure_creds credential for azure app
+#'@param box_highlight whether to have the additional step of flagging the cropped image
+#'@param remove_fl whether to remove images
+#'@export
+post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds,
+                                box_highlight = T, remove_fl = T) {
+  cropped_img <- output_cropped_img(normalizePath(cropped_dir_path), img,
+                                    df$idx, df$x, df$y, df$w, df$h)
+  
+  if (box_highlight) {
+    c(flagged_img, flag_cnts) %<-% crop_out_obj(image_file = cropped_img,
+                                                output_cropped = F, output_dir = NULL)
+    
+    cv2$imwrite(cropped_img, flagged_img)
+    
+    az_area <- df$az[[1]] %>% purrr::map_dbl(az_line_area) %>% sum()
+    flag_area <- flag_cnts %>% purrr::map_dbl(~cv2$contourArea(.)) %>% sum()
+    if (az_area >= flag_area) {
+      line_res <- list(flag = "not run", result = df$az %>% .[[1]])
+    } else {
+      line_res <- list(flag = 'run', 
+                       result = azure_post(subscription_key = azure_creds$subscription_key,
+                                          endpoint = azure_creds$endpoint, 
+                                          image_path = normalizePath(cropped_img))
+                       )
+    }
+  }  
+  line_res <- list(flag = 'run', 
+                   result = azure_post(subscription_key = azure_creds$subscription_key,
+                                       endpoint = azure_creds$endpoint, 
+                                       image_path = normalizePath(cropped_img))
+  )
+  return(line_res)
+}
+
 #' @title ocr image wrapper
 #' @param img_file img file path
 #' @param hmax maximum box height to include
