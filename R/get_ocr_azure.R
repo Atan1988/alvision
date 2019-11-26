@@ -14,7 +14,15 @@ get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds,
   if (box_highlight) {
     c(flagged_img, flag_cnts) %<-% crop_out_obj(image_file = cropped_img,
                                           output_cropped = F, output_dir = NULL)
-    cv2$imwrite(cropped_img, flagged_img)
+    flagged_img_dim <- dim(flagged_img)
+    if (min(flagged_img_dim[1:2]) < 50) {
+      scale <- 50 / min(flagged_img_dim[1:2]) 
+      resize_dim <- as.integer(ceiling(c(flagged_img_dim[2], flagged_img_dim[1]) * scale))
+      flagged_img <- cv2$resize(flagged_img %>% reticulate::np_array('uint8'), 
+                                reticulate::tuple(resize_dim[1], resize_dim[2]))
+    } 
+      cv2$imwrite(cropped_img, flagged_img)
+      
     az_area <- df$az[[1]] %>% purrr::map_dbl(az_line_area) %>% sum()
     flag_area <- flag_cnts %>% purrr::map_dbl(~cv2$contourArea(.)) %>% sum()
     if (az_area >= flag_area) {

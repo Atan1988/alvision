@@ -22,7 +22,12 @@ analysis_res$recognitionResult$lines -> res_lines
 
 crop_out_boxes(main_img, hmax = 100) %->% c(img, img_bin, img_final_bin,
                                       contours, bounds_df, hierarchy)
-bounds_list <- bbox_df_to_c(bounds_df)
+
+# cv2$imwrite('img.png', img)
+# cv2$imwrite('img bin.png', img_bin)
+# cv2$imwrite('img final bin.png', img_final_bin)
+bounds_df1 <- add_rc_bbox(bbox_df = bounds_df)
+bounds_list <- bbox_df_to_c(bounds_df1)
 
 match_idx <- res_lines %>% purrr::map(~pts_to_wh(.$boundingBox)) %>%
   purrr::map_dbl(function(x) {
@@ -31,11 +36,6 @@ match_idx <- res_lines %>% purrr::map(~pts_to_wh(.$boundingBox)) %>%
     return(res)
   })
 
-
-# cv2$imwrite('img.png', img)
-# cv2$imwrite('img bin.png', img_bin)
-# cv2$imwrite('img final bin.png', img_final_bin)
-bounds_df1 <- add_rc_bbox(bbox_df = bounds_df)
 bounds_df1$az <- 1:nrow(bounds_df1) %>%  purrr::map(
   function(x) {
     idx <- which(match_idx == x)
