@@ -6,6 +6,18 @@
 azure_post <- function(subscription_key, endpoint, image_path){
   vision_base_url <- paste0(endpoint, "vision/v2.0/")
   text_recognition_url <- paste0(vision_base_url, "recognizeText")
+  
+  #check the size of the image if not meeting 50X50, resize it
+  loaded_img <- cv2$imread(image_path)
+  dims <- dim(loaded_img)
+  if (min(dims[1:2]) < 50) {
+    scale <- 50 / min(dims[1:2]) 
+    resize_dim <- as.integer(ceiling(c(dims[2], dims[1]) * scale))
+    loaded_img <- cv2$resize(loaded_img %>% reticulate::np_array('uint8'), 
+                              reticulate::tuple(resize_dim[1], resize_dim[2]))
+    cv2$imwrite(image_path, loaded_img)
+  } 
+  
   # Read the image into a byte array
   image_data <-  py_built$open(image_path, "rb")$read()
   headers = list('Ocp-Apim-Subscription-Key'= subscription_key,
