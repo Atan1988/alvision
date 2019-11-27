@@ -16,7 +16,11 @@ crt_png_from_pdf <- function(pdf_file, pages = NULL, dpi = 350) {
 #'@param new_size in the form of YxY
 #'@export
 resize_png  <- function(img_file, new_size = '3500x3500') {
-  resize_fl <- paste0('resize-full ', img_file)
+  parent_folder <- dirname(img_file)
+  resize_fl <- file.path(parent_folder,
+                  paste0('resize-full ',
+                      strsplit(img_file, '/') %>% .[[1]] %>% .[length(.)])
+              )
   raw_img <- magick::image_read(img_file)
   raw_img %>% magick::image_resize(new_size) %>%
     magick::image_quantize(colorspace = 'gray') %>%

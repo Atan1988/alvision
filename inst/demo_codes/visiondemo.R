@@ -14,9 +14,8 @@ image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL)
 img_file <- image_files[2]
 
 # Read the image
-resize_png  <- function(img_file, new_size = '3500x3500')
+main_img <- resize_png(img_file, new_size = '3500x3500')
 
-main_img <-  'resize-full 2.png'
 analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
                           endpoint = azure_creds$endpoint,
                           image_path = normalizePath(main_img ))
