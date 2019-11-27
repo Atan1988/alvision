@@ -96,6 +96,33 @@ post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds,
   )
   return(line_res)
 }
+
+#'@title vectorized post azure
+#'@param df bounds dataframe
+#'@param cropped_tm_dir temporary dir to output cropped img
+#'@param img image
+#'@param azure_cred azure credentials
+#'@param box_highlight whether to have the additional step of flagging the cropped image
+#'@param remove_fl whether to remove cropped files
+#'@export
+vec_post_cropped_azure <- function(df, cropped_tm_dir, img,
+                                   azure_creds, box_highlight = F, remove_fl = F) {
+  tictoc::tic()
+  pb <- dplyr::progress_estimated(nrow(df))
+  df2 <- df %>%
+    purrrlyr::by_row(
+      function(row) {
+        res <- post_cropped_azure(row, cropped_dir_path = cropped_tm_dir,
+                                  img, azure_creds, box_highlight = box_highlight,
+                                  remove_fl = remove_fl)
+        pb$tick()$print()
+        return(res)
+      }
+    )
+  tictoc::toc()
+  return(df2)
+}
+
 #'@title post cropped image to azure
 #'@param df the data frame with contour info
 #'@export
@@ -111,6 +138,22 @@ get_cropped_azure <- function(res) {
                 h <- mean(abs(boxes[2] - boxes[8]), abs(boxes[4] - boxes[6]))
                 tibble::tibble(txt = txt, x = x, y = y, w = w, h = h)
           })
+}
+
+#'@title get response from azure api, vectorized
+#'@param df the data frame from vec_post_cropped_azure
+#'@export
+vec_get_cropped_azure <- function(df) {
+  tictoc::tic()
+  pb <- dplyr::progress_estimated(nrow(df))
+  df3 <- df %>%
+    purrrlyr::by_row(
+      function(row) {
+        res <- get_cropped_azure(row$.out[[1]]); pb$tick()$print()
+        return(res)
+      }, .to = 'get_res')
+  tictoc::toc()
+  return(df3)
 }
 
 #' @title ocr image wrapper

@@ -44,32 +44,11 @@ bounds_df1$az <- 1:nrow(bounds_df1) %>%  purrr::map(
   }
 )
 
-tictoc::tic()
-pb <- dplyr::progress_estimated(nrow(bounds_df1))
-bounds_df2 <- bounds_df1 %>% #.[1:10, ] %>%
-  purrrlyr::by_row(
-    function(row) {
-      #print(row$idx)
-      # res <- get_ocr_azure(row, cropped_dir_path = cropped_tm_dir,
-      #                      img, azure_creds, remove_fl = F)
-      res <- post_cropped_azure(row, cropped_dir_path = cropped_tm_dir,
-                               img, azure_creds, box_highlight = F, remove_fl = F)
-      Sys.sleep(0.1)
-      pb$tick()$print()
-      return(res)
-    }
-  )
-tictoc::toc()
+bounds_df2 <- vec_post_cropped_azure(bounds_df1, cropped_tm_dir = cropped_tm_dir, img,
+                          azure_creds, box_highlight = F, remove_fl = F)
 
-tictoc::tic()
-pb <- dplyr::progress_estimated(nrow(bounds_df2))
-bounds_df3 <- bounds_df2 %>% #.[1:10, ] %>%
-  purrrlyr::by_row(
-    function(row) {
-      res <- get_cropped_azure(row$.out[[1]]); pb$tick()$print()
-      return(res)
-    }, .to = 'get_res')
-tictoc::toc()
+bounds_df3 <- vec_get_cropped_azure(bounds_df2)
+
 #parse_df <- readr::read_rds('inst/data/azure parsed results/ace page2.rds')
 parse_df1 <- bounds_df3 %>%
   purrrlyr::by_row(
