@@ -14,11 +14,7 @@ image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL)
 img_file <- image_files[2]
 
 # Read the image
-resize_fl <- paste0('resize-full ', img_file)
-raw_img <- magick::image_read(img_file)
-raw_img %>% magick::image_resize('3500x3500') %>%
-  magick::image_quantize(colorspace = 'gray') %>%
-  magick::image_write('resize-full 2.png')
+resize_png  <- function(img_file, new_size = '3500x3500')
 
 main_img <-  'resize-full 2.png'
 analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,

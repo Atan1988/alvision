@@ -21,4 +21,5 @@ resize_png  <- function(img_file, new_size = '3500x3500') {
   raw_img %>% magick::image_resize(new_size) %>%
     magick::image_quantize(colorspace = 'gray') %>%
     magick::image_write(resize_fl)
+  return(resize_fl)
 }
