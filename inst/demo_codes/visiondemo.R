@@ -49,7 +49,7 @@ pb <- dplyr::progress_estimated(nrow(bounds_df1))
 bounds_df2 <- bounds_df1 %>% #.[1:10, ] %>%
   purrrlyr::by_row(
     function(row) {
-      print(row$idx)
+      #print(row$idx)
       # res <- get_ocr_azure(row, cropped_dir_path = cropped_tm_dir,
       #                      img, azure_creds, remove_fl = F)
       res <- post_cropped_azure(row, cropped_dir_path = cropped_tm_dir,
@@ -60,11 +60,21 @@ bounds_df2 <- bounds_df1 %>% #.[1:10, ] %>%
     }
   )
 tictoc::toc()
-#parse_df <- readr::read_rds('inst/data/azure parsed results/ace page2.rds')
-parse_df1 <- bounds_df2 %>%
+
+tictoc::tic()
+pb <- dplyr::progress_estimated(nrow(bounds_df2))
+bounds_df3 <- bounds_df2 %>% #.[1:10, ] %>%
   purrrlyr::by_row(
     function(row) {
-      df <- row$.out[[1]]
+      res <- get_cropped_azure(row$.out[[1]]); pb$tick()$print()
+      return(res)
+    }, .to = 'get_res')
+tictoc::toc()
+#parse_df <- readr::read_rds('inst/data/azure parsed results/ace page2.rds')
+parse_df1 <- bounds_df3 %>%
+  purrrlyr::by_row(
+    function(row) {
+      df <- row$get_res[[1]]
       if (nrow(df) == 0) return("")
       df %>% dplyr::summarise(txt = paste(stringr::str_squish(txt), collapse = "  "))
     }, .to = '.txt') %>% tidyr::unnest(cols = '.txt')
