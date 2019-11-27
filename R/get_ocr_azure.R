@@ -136,9 +136,13 @@ vec_post_cropped_azure <- function(df, cropped_tm_dir, img,
 #'@param df the data frame with contour info
 #'@export
 get_cropped_azure <- function(res) {
-  if (res$flag == "not run") lines <- res$result
-  lines <-azure_get(response = res$result[[1]],
-                headers = res$result[[2]])$recognitionResult$lines
+  if (res$flag == "not run") {
+    lines <- res$result
+  } else {
+    lines <-azure_get(response = res$result[[1]],
+                      headers = res$result[[2]])$recognitionResult$lines
+  }
+
   lines %>%
          purrr::map_df(function(x){
                 boxes <- x$boundingBox; txt <- x$text
