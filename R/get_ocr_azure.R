@@ -107,18 +107,21 @@ post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds, push_to_
 #'@param cropped_tm_dir temporary dir to output cropped img
 #'@param img image
 #'@param azure_cred azure credentials
+#'@param push_to_az whether to push to azure
 #'@param box_highlight whether to have the additional step of flagging the cropped image
 #'@param remove_fl whether to remove cropped files
 #'@export
 vec_post_cropped_azure <- function(df, cropped_tm_dir, img,
-                                   azure_creds, box_highlight = F, remove_fl = F) {
+                                   azure_creds, push_to_az = T,
+                                   box_highlight = F, remove_fl = F) {
   tictoc::tic()
   pb <- dplyr::progress_estimated(nrow(df))
   df2 <- df %>%
     purrrlyr::by_row(
       function(row) {
         res <- post_cropped_azure(row, cropped_dir_path = cropped_tm_dir,
-                                  img, azure_creds, box_highlight = box_highlight,
+                                  img, azure_creds, push_to_az = push_to_az,
+                                  box_highlight = box_highlight,
                                   remove_fl = remove_fl)
         pb$tick()$print()
         return(res)

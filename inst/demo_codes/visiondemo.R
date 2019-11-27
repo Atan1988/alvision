@@ -21,6 +21,7 @@ tictoc::toc()
 analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
                           endpoint = azure_creds$endpoint,
                           image_path = normalizePath(main_img ))
+
 analysis_res$recognitionResult$lines -> res_lines
 
 crop_out_boxes(main_img, hmax = 100) %->% c(img, img_bin, img_final_bin,
@@ -28,8 +29,9 @@ crop_out_boxes(main_img, hmax = 100) %->% c(img, img_bin, img_final_bin,
 
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
 
-bounds_df2 <- vec_post_cropped_azure(bounds_df1, cropped_tm_dir = cropped_tm_dir, img,
-                          azure_creds, box_highlight = F, remove_fl = F)
+bounds_df2 <- vec_post_cropped_azure(df = bounds_df1, cropped_tm_dir = cropped_tm_dir,
+                  img = img, azure_creds = azure_creds, push_to_az = F,
+                  box_highlight = F, remove_fl = F)
 
 bounds_df3 <- vec_get_cropped_azure(bounds_df2)
 

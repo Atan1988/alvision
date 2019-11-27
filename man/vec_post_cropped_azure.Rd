@@ -9,6 +9,7 @@ vec_post_cropped_azure(
   cropped_tm_dir,
   img,
   azure_creds,
+  push_to_az = T,
   box_highlight = F,
   remove_fl = F
 )
@@ -19,6 +20,8 @@ vec_post_cropped_azure(
 \item{cropped_tm_dir}{temporary dir to output cropped img}
 
 \item{img}{image}
+
+\item{push_to_az}{whether to push to azure}
 
 \item{box_highlight}{whether to have the additional step of flagging the cropped image}
 
