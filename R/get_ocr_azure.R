@@ -14,22 +14,22 @@ get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds,
   if (box_highlight) {
     c(flagged_img, flag_cnts) %<-% crop_out_obj(image_file = cropped_img,
                                           output_cropped = F, output_dir = NULL)
- 
+
     cv2$imwrite(cropped_img, flagged_img)
-      
+
     az_area <- df$az[[1]] %>% purrr::map_dbl(az_line_area) %>% sum()
     flag_area <- flag_cnts %>% purrr::map_dbl(~cv2$contourArea(.)) %>% sum()
     if (az_area >= flag_area) {
       line_res <- df$az %>% .[[1]]
     } else {
       analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
-                                endpoint = azure_creds$endpoint, 
+                                endpoint = azure_creds$endpoint,
                                 image_path = normalizePath(cropped_img))
       line_res <- analysis_res$recognitionResult$lines
     }
   } else {
     analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
-                              endpoint = azure_creds$endpoint, 
+                              endpoint = azure_creds$endpoint,
                               image_path = normalizePath(cropped_img))
     line_res <- analysis_res$recognitionResult$lines
   }
@@ -60,38 +60,38 @@ post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds,
   start <- Sys.time()
   cropped_img <- output_cropped_img(normalizePath(cropped_dir_path), img,
                                     df$idx, df$x, df$y, df$w, df$h)
-  
+
   if (box_highlight) {
-    
+
     c(flagged_img, flag_cnts) %<-% crop_out_obj(image_file = cropped_img,
                                                 output_cropped = F, output_dir = NULL)
-    
+
     cv2$imwrite(cropped_img, flagged_img)
-    
-    
+
+
     az_area <- df$az[[1]] %>% purrr::map_dbl(az_line_area) %>% sum()
     flag_area <- flag_cnts %>% purrr::map_dbl(~cv2$contourArea(.)) %>% sum()
-    
+
     if (az_area >= flag_area) {
-     
-      line_res <- list(flag = "not run", result = df$az %>% .[[1]], 
+
+      line_res <- list(flag = "not run", result = df$az %>% .[[1]],
                        time = Sys.time() - start)
     } else {
       tictoc::tic()
-      line_res <- list(flag = 'run', 
+      line_res <- list(flag = 'run',
                        result = azure_post(subscription_key = azure_creds$subscription_key,
-                                          endpoint = azure_creds$endpoint, 
-                                          image_path = normalizePath(cropped_img)), 
+                                          endpoint = azure_creds$endpoint,
+                                          image_path = normalizePath(cropped_img)),
                        time = Sys.time() - start
                        )
       tictoc::toc()
     }
     return(line_res)
-  }  
-  line_res <- list(flag = 'run', 
+  }
+  line_res <- list(flag = 'run',
                    result = azure_post(subscription_key = azure_creds$subscription_key,
-                                       endpoint = azure_creds$endpoint, 
-                                       image_path = normalizePath(cropped_img)), 
+                                       endpoint = azure_creds$endpoint,
+                                       image_path = normalizePath(cropped_img)),
                    time = Sys.time() - start
   )
   return(line_res)
@@ -100,8 +100,17 @@ post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds,
 #'@param df the data frame with contour info
 #'@export
 get_cropped_azure <- function(res) {
-  if (res$flag == "not run") return(res$result)
-  azure_get(response = res$result[[1]], headers = res$result[[2]])$recognitionResult$lines
+  if (res$flag == "not run") lines <- res$result
+  lines <-azure_get(response = res$result[[1]],
+                headers = res$result[[2]])$recognitionResult$lines
+  lines %>%
+         purrr::map_df(function(x){
+                boxes <- x$boundingBox; txt <- x$text
+                x <- boxes[1]; y <- boxes[2]
+                w <- mean(abs(boxes[1] - boxes[3]), abs(boxes[5] - boxes[7]))
+                h <- mean(abs(boxes[2] - boxes[8]), abs(boxes[4] - boxes[6]))
+                tibble::tibble(txt = txt, x = x, y = y, w = w, h = h)
+          })
 }
 
 #' @title ocr image wrapper
