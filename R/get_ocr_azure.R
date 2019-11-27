@@ -52,11 +52,17 @@ get_ocr_azure <- function(df, cropped_dir_path, img, azure_creds,
 #'@param cropped_dir_path tmp path to output cropped img
 #'@param img original image
 #'@param azure_creds credential for azure app
+#'@param push_to_az whether to push to azure
 #'@param box_highlight whether to have the additional step of flagging the cropped image
 #'@param remove_fl whether to remove images
 #'@export
-post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds,
+post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds, push_to_az = T,
                                 box_highlight = T, remove_fl = T) {
+  if (!push_to_az) {
+    line_res <- list(flag = "not run", result = df$az %>% .[[1]],
+                     time = Sys.time() - start)
+    return(line_res)
+  }
   start <- Sys.time()
   cropped_img <- output_cropped_img(normalizePath(cropped_dir_path), img,
                                     df$idx, df$x, df$y, df$w, df$h)
@@ -73,7 +79,6 @@ post_cropped_azure  <- function(df, cropped_dir_path, img, azure_creds,
     flag_area <- flag_cnts %>% purrr::map_dbl(~cv2$contourArea(.)) %>% sum()
 
     if (az_area >= flag_area) {
-
       line_res <- list(flag = "not run", result = df$az %>% .[[1]],
                        time = Sys.time() - start)
     } else {

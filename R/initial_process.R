@@ -13,17 +13,33 @@ crt_png_from_pdf <- function(pdf_file, pages = NULL, dpi = 350) {
 
 #'@title resize the image to meet azure criteria
 #'@param img_file original file path
-#'@param new_size in the form of YxY
+#'@param file_size_limit file size limit in mbs
 #'@export
-resize_png  <- function(img_file, new_size = '3500x3500') {
+resize_png  <- function(img_file, file_size_limit = 3.8) {
   parent_folder <- dirname(img_file)
   resize_fl <- file.path(parent_folder,
                   paste0('resize-full ',
                       strsplit(img_file, '/') %>% .[[1]] %>% .[length(.)])
               )
+  ###first convert to gray
   raw_img <- magick::image_read(img_file)
-  raw_img %>% magick::image_resize(new_size) %>%
+
+  raw_img %>%
     magick::image_quantize(colorspace = 'gray') %>%
     magick::image_write(resize_fl)
+
+  ###check image size
+  img_sz <- file.size(resize_fl) / (1024^2)
+  raw_dim <- raw_img %>% magick::image_data() %>% dim()
+
+  if (img_sz > file_size_limit) {
+     scale <- sqrt(file_size_limit / img_sz)
+     sz <- floor(max(raw_dim) * scale)
+     magick::image_read(resize_fl) %>%
+       magick::image_quantize(colorspace = 'gray') %>%
+       magick::image_resize(paste0(sz, "x", sz)) %>%
+       magick::image_write(resize_fl)
+  }
+
   return(resize_fl)
 }

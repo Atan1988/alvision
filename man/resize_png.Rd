@@ -4,12 +4,12 @@
 \alias{resize_png}
 \title{resize the image to meet azure criteria}
 \usage{
-resize_png(img_file, new_size = "3500x3500")
+resize_png(img_file, file_size_limit = 3.8)
 }
 \arguments{
 \item{img_file}{original file path}
 
-\item{new_size}{in the form of YxY}
+\item{file_size_limit}{file size limit in mbs}
 }
 \description{
 resize the image to meet azure criteria
