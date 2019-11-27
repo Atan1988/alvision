@@ -9,7 +9,7 @@ azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
 pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
-image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL)
+image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
 
 img_file <- image_files[2]
 
@@ -44,5 +44,8 @@ parse_df1 <- bounds_df3 %>%
       df %>% dplyr::summarise(txt = paste(stringr::str_squish(txt), collapse = "  "))
     }, .to = '.txt') %>% tidyr::unnest(cols = '.txt')
 
-parse_df2 <- parse_df1 %>% select(row, col, txt) %>%
-  tidyr::pivot_wider(names_from = col, values_from = txt)
+cols_lvl <- parse_df1$col  %>% unique() %>% sort()
+parse_df2 <- parse_df1 %>% dplyr::select(row, col, txt) %>%
+  dplyr::arrange(col, row) %>%
+  tidyr::pivot_wider(names_from = col, values_from = txt) %>%
+  dplyr::arrange(row)

@@ -8,6 +8,7 @@ crt_png_from_pdf <- function(pdf_file, pages = NULL, dpi = 350) {
   converted_img <- pdftools::pdf_convert(pdf = pdf_file, pages = pages, dpi = dpi)
   file.copy(from = converted_img, to = file.path(parent_folder, converted_img),
             overwrite = T)
+  unlink(converted_img)
   return(file.path(parent_folder, converted_img))
 }
 
