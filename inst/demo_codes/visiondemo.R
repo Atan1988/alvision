@@ -23,26 +23,7 @@ analysis_res$recognitionResult$lines -> res_lines
 crop_out_boxes(main_img, hmax = 100) %->% c(img, img_bin, img_final_bin,
                                       contours, bounds_df, hierarchy)
 
-# cv2$imwrite('img.png', img)
-# cv2$imwrite('img bin.png', img_bin)
-# cv2$imwrite('img final bin.png', img_final_bin)
-bounds_df1 <- add_rc_bbox(bbox_df = bounds_df)
-bounds_list <- bbox_df_to_c(bounds_df1)
-
-match_idx <- res_lines %>% purrr::map(~pts_to_wh(.$boundingBox)) %>%
-  purrr::map_dbl(function(x) {
-    res <- bounds_list %>% purrr::map_lgl(~chk_box_in(., x, 10)) %>% which(.)
-    if (length(res) == 0) return(NA)
-    return(res)
-  })
-
-bounds_df1$az <- 1:nrow(bounds_df1) %>%  purrr::map(
-  function(x) {
-    idx <- which(match_idx == x)
-    if (length(idx) == 0) return(list())
-    return(res_lines[idx])
-  }
-)
+bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
 
 bounds_df2 <- vec_post_cropped_azure(bounds_df1, cropped_tm_dir = cropped_tm_dir, img,
                           azure_creds, box_highlight = F, remove_fl = F)
