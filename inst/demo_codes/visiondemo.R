@@ -18,12 +18,14 @@ tictoc::tic()
 main_img <- resize_png(img_file)
 tictoc::toc()
 
+tictoc::tic()
 analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
                           endpoint = azure_creds$endpoint,
                           image_path = normalizePath(main_img ))
-
 analysis_res$recognitionResult$lines -> res_lines
+tictoc::toc()
 
+tictoc::tic()
 crop_out_boxes(main_img, hmax = 100) %->% c(img, img_bin, img_final_bin,
                                       contours, bounds_df, hierarchy)
 
@@ -43,8 +45,8 @@ parse_df1 <- bounds_df3 %>%
       if (nrow(df) == 0) return("")
       df %>% dplyr::summarise(txt = paste(stringr::str_squish(txt), collapse = "  "))
     }, .to = '.txt') %>% tidyr::unnest(cols = '.txt')
+tictoc::toc()
 
-cols_lvl <- parse_df1$col  %>% unique() %>% sort()
 parse_df2 <- parse_df1 %>% dplyr::select(row, col, txt) %>%
   dplyr::arrange(col, row) %>%
   tidyr::pivot_wider(names_from = col, values_from = txt) %>%
