@@ -23,7 +23,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
                       strsplit(img_file, '/') %>% .[[1]] %>% .[length(.)])
               ) %>% gsub('\\.pdf', '\\.png', .)
   ###first convert to gray
-  raw_img <- magick::image_read('inst/raw_data/ACE Contrractors Pollution_2.png')
+  raw_img <- magick::image_read(img_file)
 
   magick::image_convert(raw_img, colorspace = 'gray', matte = F) -> grayed
 
