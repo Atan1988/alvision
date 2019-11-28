@@ -13,35 +13,37 @@ crt_png_from_pdf <- function(pdf_file, pages = NULL, dpi = 350) {
 }
 
 #'@title resize the image to meet azure criteria
-#'@param pdf_file original pdf file path
-#'@param page which page to read in
-#'@param dpi density for the image_read_pdf function
+#'@param img_file original pdf file path
 #'@param file_size_limit file size limit in mbs
 #'@export
-resize_png  <- function(pdf_file, page, dpi = 400, file_size_limit = 3.8) {
-  parent_folder <- dirname(pdf_file)
+resize_png  <- function(img_file, file_size_limit = 3.8) {
+  parent_folder <- dirname(img_file)
   resize_fl <- file.path(parent_folder,
                   paste0('resize-full ',
-                      strsplit(pdf_file, '/') %>% .[[1]] %>% .[length(.)])
+                      strsplit(img_file, '/') %>% .[[1]] %>% .[length(.)])
               ) %>% gsub('\\.pdf', '\\.png', .)
   ###first convert to gray
-  raw_img <- magick::image_read_pdf(pdf_file, pages = 2, density = 400)
+  raw_img <- magick::image_read('inst/raw_data/ACE Contrractors Pollution_2.png')
 
-  magick::image_convert(raw_img, colorspace = 'gray') -> grayed
+  magick::image_convert(raw_img, colorspace = 'gray', matte = F) -> grayed
 
   ###check dimension
   raw_dim <- get_img_dim(grayed)
 
+  tictoc::tic()
   if (max(raw_dim) > 4000) {
     dim_scale <- 4000 / max(raw_dim)
     dim_sz <- floor(max(raw_dim) * dim_scale)
     grayed <- grayed %>%
       magick::image_resize(paste0(dim_sz, "x", dim_sz))
-    raw_dim <- grayed %>% magick::image_data() %>% dim()
+    raw_dim <- get_img_dim(grayed)
   }
+  tictoc::toc()
 
   ##write gray image out
+  tictoc::tic()
   magick::image_write(grayed, resize_fl)
+  tictoc::toc()
 
   ###check image size
   img_sz <- file.size(resize_fl) / (1024^2)

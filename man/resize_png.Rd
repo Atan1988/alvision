@@ -7,7 +7,7 @@
 resize_png(img_file, file_size_limit = 3.8)
 }
 \arguments{
-\item{img_file}{original file path}
+\item{img_file}{original pdf file path}
 
 \item{file_size_limit}{file size limit in mbs}
 }
