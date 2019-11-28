@@ -4,12 +4,20 @@
 #' @param dpi dpi, quality of the image being created
 #' @export
 crt_png_from_pdf <- function(pdf_file, pages = NULL, dpi = 350) {
+  tictoc::tic()
+  if (is.null(pages)) {f <- NULL; l <- NULL} else {
+    f <- min(pages); l <- max(pages)
+  }
+  images <- pdf2image$convert_from_path(pdf_file, dpi=dpi,
+                                        first_page=f, last_page=l)
   parent_folder <- dirname(pdf_file)
-  converted_img <- pdftools::pdf_convert(pdf = pdf_file, pages = pages, dpi = dpi)
-  file.copy(from = converted_img, to = file.path(parent_folder, converted_img),
-            overwrite = T)
-  unlink(converted_img)
-  return(file.path(parent_folder, converted_img))
+  image_files <- file.path(parent_folder,
+                           paste0(gsub(paste0(parent_folder, "/|\\.pdf"), "", pdf_file), "_",
+                                  1:length(images), '.png'))
+  1:length(images) %>%
+    purrr::map(~images[[.]]$save(image_files[.]))
+  tictoc::toc()
+  return(image_files)
 }
 
 #'@title resize the image to meet azure criteria
