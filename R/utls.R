@@ -108,7 +108,7 @@ add_rc_bbox <- function(bbox_df) {
       by = "y"
     ) %>%
     dplyr::arrange(row, col) %>%
-    dplyr::ungroup() %>% 
+    dplyr::ungroup() %>%
     dplyr::mutate(idx = seq(1, dplyr::n(), 1))
 
   return(bbox_df1)
@@ -121,4 +121,12 @@ az_line_area  <- function(line) {
  line$words %>% purrr::map_dbl(
    function(x) {bbox <- x$boundingBox %>% pts_to_wh();
                 bbox[3] * bbox[4]}) %>% sum()
+}
+
+#'@title get magick image dimension
+#'@param x magick image
+#'@export
+get_img_dim <- function(x) {
+  magick::image_info(x) %>% dplyr::select(width, height) %>%
+    .[1,] %>% t() %>% as.vector()
 }
