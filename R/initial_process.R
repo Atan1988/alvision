@@ -23,27 +23,23 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
                       strsplit(img_file, '/') %>% .[[1]] %>% .[length(.)])
               ) %>% gsub('\\.pdf', '\\.png', .)
   ###first convert to gray
-  raw_img <- magick::image_read(img_file)
-
-  magick::image_convert(raw_img, colorspace = 'gray', matte = F) -> grayed
+  grayed <- cv2$imread(normalizePath(img_file), 0L) %>%
+    reticulate::np_array(dtype = "uint8")
 
   ###check dimension
-  raw_dim <- get_img_dim(grayed)
+  raw_dim <- grayed$shape %>% reticulate::py_to_r() %>% unlist()
 
-  tictoc::tic()
   if (max(raw_dim) > 4000) {
     dim_scale <- 4000 / max(raw_dim)
-    dim_sz <- floor(max(raw_dim) * dim_scale)
-    grayed <- grayed %>%
-      magick::image_resize(paste0(dim_sz, "x", dim_sz))
-    raw_dim <- get_img_dim(grayed)
+    dim_sz <- floor( raw_dim * dim_scale) %>% as.integer()
+    grayed <- grayed %>% cv2$resize(reticulate::tuple(dim_sz[2], dim_sz[1])) %>%
+      reticulate::np_array(dtype = "uint8")
+    raw_dim <- grayed$shape %>% reticulate::py_to_r() %>% unlist()
   }
-  tictoc::toc()
 
+  cv2$imwrite(resize_fl, grayed)
   ##write gray image out
-  tictoc::tic()
-  magick::image_write(grayed, resize_fl)
-  tictoc::toc()
+  magick::image_write(grayed, resize_fl); tictoc::toc()
 
   ###check image size
   img_sz <- file.size(resize_fl) / (1024^2)
@@ -51,11 +47,12 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
   ###convert the image size if it's larger than 4M
   if (img_sz > file_size_limit) {
      scale <- sqrt(file_size_limit / img_sz)
-     sz <- floor(max(raw_dim) * scale)
-     magick::image_read(resize_fl) %>%
-       magick::image_convert(colorspace = 'gray')%>%
-       magick::image_resize(paste0(sz, "x", sz)) %>%
-       magick::image_write(resize_fl)
+     sz <- floor(raw_dim * scale) %>% as.integer()
+     cv2$imread(normalizePath(resize_fl), 0L) %>%
+       reticulate::np_array(dtype = "uint8") %>%
+       cv2$resize(reticulate::tuple(sz[2], sz[1])) %>%
+       reticulate::np_array(dtype = "uint8") %>%
+       cv2$imwrite(resize_fl, .)
   }
 
   return(resize_fl)
