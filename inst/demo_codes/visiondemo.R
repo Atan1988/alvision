@@ -9,20 +9,7 @@ azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
 pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
-tictoc::tic()
 image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
-tictoc::toc()
-
-tictoc::tic()
-images <- pdf2image$convert_from_path(pdf_file, dpi=400)
-parent_folder <- dirname(pdf_file)
-image_files <- file.path(parent_folder,
-              paste0(gsub(paste0(parent_folder, "/|\\.pdf"), "", pdf_file), "_",
-              1:length(images), '.png'))
-1:length(images) %>%
-  purrr::map(~images[[.]]$save(image_files[.]))
-tictoc::toc()
-
 
 img_file <- image_files[2]
 
