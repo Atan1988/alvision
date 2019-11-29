@@ -26,9 +26,10 @@ az_to_cv2_box <- function(bounds_df, res_lines) {
       box_ref <- res_lines[[x]]$boundingBox %>% pts_to_wh() %>% t()
       box_ref <- tibble::as_tibble(box_ref)
       names(box_ref) <- c('x', 'y', 'w', 'h')
-      box_ref$az <- list(res_lines[[x]])
+      #box_ref$az <- list(res_lines[[x]])
       return(box_ref)
     })
+  not_matched_bounds_df$az <- not_matched_idx %>% purrr::map(~res_lines[.])
 
   bounds_dfb <- bind_rows(bounds_df, not_matched_bounds_df)
   bounds_df1 <- add_rc_bbox(bbox_df = bounds_dfb)
