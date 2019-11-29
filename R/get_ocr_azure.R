@@ -162,6 +162,7 @@ vec_get_cropped_azure <- function(df) {
   df3 <- df %>%
     purrrlyr::by_row(
       function(row) {
+        print(row)
         res <- get_cropped_azure(row$.out[[1]]); pb$tick()$print()
         return(res)
       }, .to = 'get_res')
