@@ -4,7 +4,15 @@
 \alias{ocr_img_wrapper}
 \title{ocr image wrapper}
 \usage{
-ocr_img_wrapper(img_file, hmax = 100, cropped_tm_dir, azure_creds)
+ocr_img_wrapper(
+  img_file,
+  hmax = 100,
+  cropped_tm_dir,
+  azure_creds,
+  box_push_to_az = F,
+  box_highlight = F,
+  remove_fl = F
+)
 }
 \arguments{
 \item{img_file}{img file path}
@@ -14,6 +22,12 @@ ocr_img_wrapper(img_file, hmax = 100, cropped_tm_dir, azure_creds)
 \item{cropped_tm_dir}{temporary dir for cropped img}
 
 \item{azure_creds}{azure credential}
+
+\item{box_push_to_az}{whether to push the individual boxes to azure}
+
+\item{box_highlight}{whether to highlight boxes, this allows the check to use results from the main push if it seems to work well}
+
+\item{remove_fl}{whether to remove files written by the box level push}
 }
 \description{
 ocr image wrapper

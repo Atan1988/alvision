@@ -14,6 +14,7 @@ py_built <- NULL
   # get_words_content <<- py_main$get_words_content
   # FeatureType <<- py_main$FeatureType
   cv2 <<- reticulate::import('cv2', delay_load = TRUE)
+  imutils <<- reticulate::import('imutils', delay_load = TRUE)
   pdf2image <<- reticulate::import('pdf2image', delay_load = TRUE)
   ipywidgets <<- reticulate::import('ipywidgets', delay_load = TRUE)
   np <<- reticulate::import('numpy', delay_load = TRUE)

@@ -26,18 +26,19 @@ crop_out_boxes <- function(img_file, hmax){
     reticulate::np_array(dtype = "uint8")
   verticle_lines_img <- cv2$dilate(img_temp1, verticle_kernel, iterations=3L)%>%
     reticulate::np_array(dtype = "uint8")
-  #cv2.imwrite("verticle_lines.jpg",verticle_lines_img)
+  #cv2$imwrite("verticle_lines.jpg",verticle_lines_img)
   # Morphological operation to detect horizontal lines from an image
   img_temp2 <- cv2$erode(img_bin %>% reticulate::np_array(dtype = "uint8"), hori_kernel, iterations=3L)%>%
     reticulate::np_array(dtype = "uint8")
   horizontal_lines_img <- cv2$dilate(img_temp2, hori_kernel, iterations=3L)%>%
     reticulate::np_array(dtype = "uint8")
-  #cv2.imwrite("horizontal_lines.jpg",horizontal_lines_img)
+  #cv2$imwrite("horizontal_lines.jpg",horizontal_lines_img)
   # Weighting parameters, this will decide the quantity of an image to be added to make a new image.
   alpha <- 0.5
   beta <- 1.0 - alpha
   # This function helps to add two image with specific weight parameter to get a third image as summation of two image.
-  img_final_bin <- cv2$addWeighted(verticle_lines_img, alpha, horizontal_lines_img, beta, 0.0)
+  img_final_bin <- cv2$addWeighted(verticle_lines_img, alpha,
+                                   horizontal_lines_img, beta, 0.0)
   dim1 <- dim(img_final_bin)
   img_final_bin <- cv2$erode(matrix(bitwNot(img_final_bin), nrow = dim1[1]) %>%
                                reticulate::np_array(dtype = "uint8"),
@@ -76,7 +77,7 @@ sort_contours <- function(cnts, method="left-to-right", hmax = 100){
     }) %>% dplyr::arrange_at(i)
 
   if (reverse)  boundingBoxes <-  boundingBoxes %>% .[nrow(.):1, ]
-  boundingBoxes <- boundingBoxes %>% dplyr::filter(h < hmax)
+  boundingBoxes <- boundingBoxes %>% dplyr::filter(h < hmax, h > 20)
   # (cnts, boundingBoxes) = zip(*sorted(zip(cnts, boundingBoxes),
   #                                     key=lambda b: b[1][i], reverse=reverse))
   # return the list of sorted contours and bounding boxes
@@ -123,7 +124,8 @@ crop_out_obj <- function(image_file, output_cropped = F, output_dir = NULL) {
                         NULL, iterations=2L) %>% reticulate::np_array(dtype = "uint8")
 
   # find contours in the image
-  c(cnts, hirachy) %<-% cv2$findContours(dilate$copy(), cv2$RETR_EXTERNAL, cv2$CHAIN_APPROX_SIMPLE)
+  c(cnts, hirachy) %<-% cv2$findContours(thresh1 %>% reticulate::np_array(dtype = "uint8"),
+                            cv2$RETR_EXTERNAL, cv2$CHAIN_APPROX_SIMPLE)
   #cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
   orig <-  image
@@ -143,4 +145,61 @@ crop_out_obj <- function(image_file, output_cropped = F, output_dir = NULL) {
     i = i + 1
   }
   return(list(orig = orig, cnts = cnts))
+}
+
+#'@title get checkboxes
+#'@param img_file file of image or np array of image
+#'@export
+identify_chkboxes <- function(img_file){
+  # Read the image
+  if (!"numpy.ndarray" %in% class(img_file)) {
+    image <-  cv2$imread(normalizePath(image_file)) %>% reticulate::np_array(dtype = "uint8")
+    gray <- cv2$cvtColor(image, cv2$COLOR_BGR2GRAY) %>% reticulate::np_array(dtype = "uint8")
+  } else {
+    gray <- img_file
+  }
+
+  gray <-  cv2$GaussianBlur(gray, reticulate::tuple(7L, 7L), 0L) %>%
+    reticulate::np_array(dtype = "uint8")
+
+  # threshold the image
+  c(ret, thresh1) %<-% cv2$threshold(gray ,127,255,cv2$THRESH_BINARY_INV)
+
+  # dilate the white portions
+  dilate <-  cv2$dilate(thresh1 %>% reticulate::np_array(dtype = "uint8"),
+                        NULL, iterations=2L) %>% reticulate::np_array(dtype = "uint8")
+
+  # find contours in the image
+  c(cnts, hirachy) %<-% cv2$findContours(thresh1 %>% reticulate::np_array(dtype = "uint8"),
+                                         cv2$RETR_EXTERNAL, cv2$CHAIN_APPROX_SIMPLE)
+
+  orig <-  gray
+  i <-  0
+  threshold_max_area <- 3000;
+  threshold_min_area <- 200
+  checkboxes_cnts <- cnts %>% purrr::map(
+    function(c) {
+      peri <- cv2$arcLength(c, T)
+      approx <- cv2$approxPolyDP(c, 0.035 * peri, T)
+      c(x, y, w, h) %<-% cv2$boundingRect(approx)
+      aspect_ratio <- w / h
+      area <-  cv2$contourArea(c)
+      if (area < threshold_max_area & area > threshold_min_area &
+          (aspect_ratio >= 0.95 & aspect_ratio <= 1.05)){
+        return(c)
+      }
+      return(NULL)
+    }
+  )
+  checkboxes_cnts[sapply(checkboxes_cnts, is.null)] <- NULL
+
+  return(checkboxes_cnts)
+  # 1:length(cnts) %>% purrr::map(
+  #   function(i) {
+  #     c(x, y, w, h) %<-% cv2$boundingRect(cnts[[i]])
+  #     new_img <- orig %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)]
+  #     cv2$imwrite(file.path('tmp1', paste0(i,'.png')), new_img)
+  #   }
+  # )
+
 }
