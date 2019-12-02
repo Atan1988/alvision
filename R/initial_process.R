@@ -69,7 +69,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
        cv2$resize(reticulate::tuple(sz[2], sz[1])) %>%
        reticulate::np_array(dtype = "uint8") %>%
        cv2$imwrite(resize_fl, .)
-    
+
      ##write out fixed original color image
      orig_img %>%
        cv2$resize(reticulate::tuple(sz[2], sz[1])) %>%
@@ -77,5 +77,5 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
        cv2$imwrite(resize_fl1, .)
   }
 
-  return(resize_fl)
+  return(c(resize_fl, reszie_fl1))
 }
