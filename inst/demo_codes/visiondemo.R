@@ -9,8 +9,9 @@ azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
 pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
-image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
-
+#image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
+#saveRDS(image_files, 'image_files.rds')
+image_files <- readr::read_rds('image_files.rds')
 img_file <- image_files[1]
 
 # Read the image
@@ -32,29 +33,32 @@ crop_out_boxes(main_img, hmax = 300) %->% c(img, img_bin, img_final_bin,
                                       contours, bounds_df, hierarchy)
 tictoc::toc()
 
-bounds_df %>% purrrlyr::by_row(
+tictoc::tic()
+chkbox_cnts <- identify_chkboxes(img)
+tictoc::toc()
+
+row <- bounds_df[18, ]
+y <- row$y; x <- row$x; w <- row$w; h <- row$h
+new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
+  reticulate::np_array('uint8')
+chkbox_cnts <- identify_chkboxes(new_img)
+chkbox_cnts
+chkbox_cnts1 <- chkbox_cnts %>% dplyr::mutate(x = x + !!x, y = y + !!y)
+quick_img_chk(chkbox_cnts1[1, ], img, 'new.png')
+
+tictoc::tic()
+bounds_df <- bounds_df %>% purrrlyr::by_row(
   function(row) {
+
+    row <- bounds_df[13, ]
     y <- row$y; x <- row$x; w <- row$w; h <- row$h
     new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
       reticulate::np_array('uint8')
     chkbox_cnts <- identify_chkboxes(new_img)
-    c(x, y, w, h) %<-% cv2$boundingRect(chkbox_cnts[[2]])
-    new_img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
-      cv2$imwrite('new.png',.)
-  }
+    return(chkbox_cnts)
+  }, .to = 'checkboxes'
 )
-
-
-
-1:length(contours) %>% purrr::map(
-  function(i) {
-    print(i)
-    c(x, y, w, h) %<-% cv2$boundingRect(contours[[i]])
-    new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)]
-    cv2$imwrite(file.path('tmp', paste0(i, '.png')), new_img)
-  }
-)
-
+tictoc::toc()
 
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)

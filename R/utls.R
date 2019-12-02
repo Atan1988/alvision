@@ -130,3 +130,54 @@ get_img_dim <- function(x) {
   magick::image_info(x) %>% dplyr::select(width, height) %>%
     .[1,] %>% t() %>% as.vector()
 }
+
+#'@title check whether two approx points are really close
+#'@param approx approximated vertex points of a contour
+#'@export
+ptwise_chk_approx <- function(approx) {
+  ptdf <- tibble::tibble(
+    x = approx[,,1],
+    y = approx[,,2]
+  ) %>%
+    dplyr::mutate(
+      nwdist = sqrt((x - min(x))^2 + (y - min(y))^2),
+      nedist = sqrt((x - max(x))^2 + (y - min(y))^2),
+      swdist = sqrt((x - min(x))^2 + (y - max(y))^2),
+      sedist = sqrt((x - max(x))^2 + (y - max(y))^2)
+    )
+  nw <- ptdf %>% dplyr::filter(nwdist == min(nwdist))
+  ne <- ptdf %>% dplyr::filter(nedist == min(nedist))
+  sw <- ptdf %>% dplyr::filter(swdist == min(swdist))
+  se <- ptdf %>% dplyr::filter(sedist == min(sedist))
+
+  ##nw and ne at similar hight
+  chk1 <- abs(ne$y - nw$y) <= 3
+  ##sw and se at similar hight
+  chk2 <- abs(se$y - sw$y) <= 3
+  ##nw and sw at similar x coord
+  chk3 <- abs(nw$x - sw$x) <= 3
+  ##ne and se at similar x coord
+  chk4 <- abs(ne$x - se$x) <= 3
+  ##check no contour points significantly higher
+  chk5 <- abs(min(ptdf$y) - min(ne$y, nw$y)) <= 3
+  ##check no contour points significantly lower
+  chk6 <- abs(max(ptdf$y) - max(se$y, sw$y)) <= 3
+  ##check no contour points significantly to the left
+  chk7 <- abs(min(ptdf$x) - min(sw$x, nw$x)) <= 3
+  ##check no contour points significantly to the right
+  chk8 <- abs(max(ptdf$x) - max(se$x, ne$x)) <= 3
+
+  return(list(flag = chk1&chk2&chk3&chk4&chk5&chk6&chk7&chk8, ptdf = ptdf))
+}
+
+#'@title quick image chk
+#'@param df x, y, w, h df
+#'@param img raw img
+#'@param out_fl output file
+#'@export
+quick_img_chk <- function(df, img, out_fl = 'new.png') {
+  y <- df$y; x <- df$x; w <- df$w; h <- df$h
+  new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
+    reticulate::np_array('uint8')
+  cv2$imwrite(out_fl, new_img)
+}
