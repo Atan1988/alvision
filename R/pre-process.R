@@ -157,7 +157,7 @@ identify_chkboxes <- function(img_file){
     image <-  cv2$imread(normalizePath(img_file)) %>% reticulate::np_array(dtype = "uint8")
     gray <- cv2$cvtColor(image, cv2$COLOR_BGR2GRAY) %>% reticulate::np_array(dtype = "uint8")
   } else {
-    gray <- img_file
+    gray <- cv2$cvtColor(img_file, cv2$COLOR_BGR2GRAY) %>% reticulate::np_array(dtype = "uint8")
   }
 
   gray <-  cv2$GaussianBlur(gray, reticulate::tuple(7L, 7L), 0L) %>%
@@ -221,7 +221,9 @@ identify_chkboxes <- function(img_file){
 
 }
 
-
+#' @title remove non black and white color from an image to remove handwritten
+#' @param img_file the file path of the image
+#' @export
 remove_color <- function(img_file) {
   image <-  cv2$imread(normalizePath(img_file))
   ch1 <- which(image[,,1] > 100 & image[,,1] < 250)
@@ -232,5 +234,5 @@ remove_color <- function(img_file) {
   image[,,2][ch] <- 255
   image[,,3][ch] <- 255
 
-  cv2$imwrite('image.png', image)
+  return(image)
 }

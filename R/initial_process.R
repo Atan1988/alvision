@@ -77,5 +77,5 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
        cv2$imwrite(resize_fl1, .)
   }
 
-  return(c(resize_fl, reszie_fl1))
+  return(c(resize_fl, resize_fl1))
 }

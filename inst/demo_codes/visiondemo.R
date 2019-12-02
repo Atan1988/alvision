@@ -16,7 +16,7 @@ img_file <- image_files[1]
 
 # Read the image
 tictoc::tic()
-main_img <- resize_png(img_file)
+c(main_img, color_img) %<-% resize_png(img_file)
 tictoc::toc()
 
 tictoc::tic()
@@ -34,7 +34,8 @@ crop_out_boxes(main_img, hmax = 300) %->% c(img, img_bin, img_final_bin,
 tictoc::toc()
 
 tictoc::tic()
-chkbox_cnts <- identify_chkboxes(img)
+chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
+  identify_chkboxes()
 tictoc::toc()
 
 row <- bounds_df[18, ]
