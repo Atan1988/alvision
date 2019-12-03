@@ -7,13 +7,15 @@ az_words_to_df <- function(line, type = 'word') {
     line <- line$words
   }
   
-  line %>% purrr::map_df(function(x) {
+  res <- line %>% purrr::map_df(function(x) {
     tmp_df <- tibble::tibble(text = x$text)
     bbox_df <- x$boundingBox %>% pts_to_wh() %>% t() %>%
       tibble::as_tibble(); colnames(bbox_df) <- c('x', 'y', 'w', 'h')
     return(dplyr::bind_cols(tmp_df, bbox_df) %>%
              dplyr::mutate(word_id = seq(1, dplyr::n(), 1)))
   })
+  if (type == 'word') return(res) else return(res %>% dplyr::select(-word_id) %>% 
+                                                dplyr::mutate(line_id = seq(1, dplyr::n(), 1)))
 }
 
 #'@title convert azure lines to df

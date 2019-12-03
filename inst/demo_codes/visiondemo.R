@@ -46,6 +46,7 @@ chkbox_cnts %>% filter(h >= 35) -> chkbox_cnts2
 chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
 
 preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_cnts2, words_df = res_lines_df)
+##find out the question
 
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
