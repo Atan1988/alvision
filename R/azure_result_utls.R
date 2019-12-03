@@ -27,7 +27,8 @@ az_lines_to_df <- function(lines) {
       res <- az_words_to_df(lines[[x]]) %>%
         dplyr::mutate(line_id = l_id)
       return(res)
-    })
+    }) %>% 
+    dplyr::mutate(combo_id = paste0(line_id, "_", word_id))
 }
 
 

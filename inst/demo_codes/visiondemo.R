@@ -44,21 +44,8 @@ chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
 tictoc::toc()
 chkbox_cnts %>% filter(h >= 35) -> chkbox_cnts2
 chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
-df <- chkbox_cnts2 %>% dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
-res_lines_df <- res_lines_df %>%
-  dplyr::mutate(combo_id = paste0(line_id, "_", word_id))
 
-preceding_word_df <- purrr::cross_df(list(combo_id = res_lines_df$combo_id,
-                                          chkbox_id = df$chkbox_id)) %>%
-                     dplyr::left_join(res_lines_df, by = 'combo_id') %>%
-                     dplyr::left_join(df, by = 'chkbox_id') %>%
-                     dplyr::mutate(
-                       diffx = x.x  - x.y - w.y, diffy = y.x - y.y,
-                       dist = sqrt(diffx^2 + diffy^2)
-                     ) %>% dplyr::group_by(chkbox_id) %>%
-                    dplyr::filter(diffx >= 0) %>%
-                    dplyr::filter(dist == min(dist)) %>%
-                    dplyr::distinct()
+preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_cnts2, words_df = res_lines_df)
 
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
