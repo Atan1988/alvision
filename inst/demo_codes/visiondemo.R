@@ -30,6 +30,7 @@ tictoc::toc()
 
 tictoc::tic()
 res_lines_df <- az_lines_to_df(res_lines)
+res_lines_only_df <- az_words_to_df(res_lines, type = 'line')
 tictoc::toc()
 
 tictoc::tic()

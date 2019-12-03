@@ -4,10 +4,12 @@
 \alias{az_words_to_df}
 \title{convert azure line words to df}
 \usage{
-az_words_to_df(line)
+az_words_to_df(line, type = "word")
 }
 \arguments{
 \item{line}{line of azure result}
+
+\item{type}{word or line}
 }
 \description{
 convert azure line words to df

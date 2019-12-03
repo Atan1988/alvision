@@ -1,8 +1,13 @@
 #'@title convert azure line words to df
 #'@param line line of azure result
+#'@param type word or line
 #'@export
-az_words_to_df <- function(line) {
-  line$words %>% purrr::map_df(function(x) {
+az_words_to_df <- function(line, type = 'word') {
+  if (type == 'word') {
+    line <- line$words
+  }
+  
+  line %>% purrr::map_df(function(x) {
     tmp_df <- tibble::tibble(text = x$text)
     bbox_df <- x$boundingBox %>% pts_to_wh() %>% t() %>%
       tibble::as_tibble(); colnames(bbox_df) <- c('x', 'y', 'w', 'h')
@@ -24,3 +29,6 @@ az_lines_to_df <- function(lines) {
       return(res)
     })
 }
+
+
+
