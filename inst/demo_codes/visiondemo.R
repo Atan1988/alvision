@@ -28,6 +28,16 @@ analysis_res <- readr::read_rds('analysis_res.rds')
 analysis_res$recognitionResult$lines -> res_lines
 tictoc::toc()
 
+line <- res_lines[[1]]
+line$words %>% purrr::map_df(function(x) {
+  tmp_df <- tibble::tibble(text = x$text,
+                           confidence = x$confidence
+                           )
+  bbox_df <- x$boundingBox %>% pts_to_wh() %>% t() %>%
+    tibble::as_tibble(); colnames(bbox_df) <- c('x', 'y', 'w', 'h')
+  return(dplyr::bind_cols(tmp_df, bbox_df))
+})
+
 tictoc::tic()
 crop_out_boxes(main_img, hmax = 300) %->% c(img, img_bin, img_final_bin,
                                       contours, bounds_df, hierarchy)
@@ -37,29 +47,8 @@ tictoc::tic()
 chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
   identify_chkboxes()
 tictoc::toc()
-
-row <- bounds_df[18, ]
-y <- row$y; x <- row$x; w <- row$w; h <- row$h
-new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
-  reticulate::np_array('uint8')
-chkbox_cnts <- identify_chkboxes(new_img)
-chkbox_cnts
-chkbox_cnts1 <- chkbox_cnts %>% dplyr::mutate(x = x + !!x, y = y + !!y)
-quick_img_chk(chkbox_cnts1[1, ], img, 'new.png')
-
-tictoc::tic()
-bounds_df <- bounds_df %>% purrrlyr::by_row(
-  function(row) {
-
-    row <- bounds_df[13, ]
-    y <- row$y; x <- row$x; w <- row$w; h <- row$h
-    new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
-      reticulate::np_array('uint8')
-    chkbox_cnts <- identify_chkboxes(new_img)
-    return(chkbox_cnts)
-  }, .to = 'checkboxes'
-)
-tictoc::toc()
+chkbox_cnts %>% filter(h >= 40) -> chkbox_cnts2
+chkbox_cnts %>% filter(h < 40) -> chkbox_cnts1
 
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
