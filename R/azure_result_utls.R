@@ -6,7 +6,8 @@ az_words_to_df <- function(line) {
     tmp_df <- tibble::tibble(text = x$text)
     bbox_df <- x$boundingBox %>% pts_to_wh() %>% t() %>%
       tibble::as_tibble(); colnames(bbox_df) <- c('x', 'y', 'w', 'h')
-    return(dplyr::bind_cols(tmp_df, bbox_df))
+    return(dplyr::bind_cols(tmp_df, bbox_df) %>%
+             dplyr::mutate(word_id = seq(1, dplyr::n(), 1)))
   })
 }
 
@@ -17,7 +18,8 @@ az_lines_to_df <- function(lines) {
   1:length(lines) %>%
     purrr::map_df(function(x){
       print(x)
-      res <- az_words_to_df(lines[[x]])
+      res <- az_words_to_df(lines[[x]]) %>%
+        dplyr::mutate(line_id = x)
       return(res)
     })
 }

@@ -41,11 +41,13 @@ tictoc::tic()
 chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
   identify_chkboxes()
 tictoc::toc()
-chkbox_cnts %>% filter(h >= 40) -> chkbox_cnts2
-chkbox_cnts %>% filter(h < 40) -> chkbox_cnts1
-df <- chkbox_cnts2[1, ]
-res_lines_df %>% mutate(diffx = x + w - df$x, diffy = y - df$y,
-                        dist = sqrt(diffx^2 + diffy^2)) -> res_lines_df1
+chkbox_cnts %>% filter(h >= 36) -> chkbox_cnts2
+chkbox_cnts %>% filter(h < 36) -> chkbox_cnts1
+df <- chkbox_cnts2 %>% dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
+
+preceding_word <- res_lines_df %>% mutate(diffx = x + w - df$x, diffy = y - df$y,
+                        dist = sqrt(diffx^2 + diffy^2)) %>%
+  dplyr::filter(diffx <= 0, dist == min(dist)) %>% dplyr::pull(text)
 
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
