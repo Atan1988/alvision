@@ -164,16 +164,14 @@ identify_chkboxes <- function(img_file){
     reticulate::np_array(dtype = "uint8")
 
   # threshold the image
-  c(ret, thresh1) %<-% cv2$threshold(gray ,127,255,cv2$THRESH_BINARY_INV)
-
+  c(ret, thresh1) %<-% cv2$threshold(gray ,128,255,
+                                     bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
+  thresh1 <- 255-thresh1
   # find contours in the image
   c(cnts, hirachy) %<-% cv2$findContours(thresh1 %>%
                                          reticulate::np_array(dtype = "uint8"),
                                          cv2$RETR_EXTERNAL, cv2$CHAIN_APPROX_NONE)
   #tictoc::toc()
-  cnts[[157]][,,1] -> x; cnts[[157]][,,2] -> y
-  plot(x, y)
-
   orig <-  gray
   i <-  0
   threshold_max_area <- 3000;
