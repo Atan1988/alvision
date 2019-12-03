@@ -28,15 +28,9 @@ analysis_res <- readr::read_rds('analysis_res.rds')
 analysis_res$recognitionResult$lines -> res_lines
 tictoc::toc()
 
-line <- res_lines[[1]]
-line$words %>% purrr::map_df(function(x) {
-  tmp_df <- tibble::tibble(text = x$text,
-                           confidence = x$confidence
-                           )
-  bbox_df <- x$boundingBox %>% pts_to_wh() %>% t() %>%
-    tibble::as_tibble(); colnames(bbox_df) <- c('x', 'y', 'w', 'h')
-  return(dplyr::bind_cols(tmp_df, bbox_df))
-})
+tictoc::tic()
+res_lines_df <- az_lines_to_df(res_lines)
+tictoc::toc()
 
 tictoc::tic()
 crop_out_boxes(main_img, hmax = 300) %->% c(img, img_bin, img_final_bin,
@@ -49,6 +43,9 @@ chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
 tictoc::toc()
 chkbox_cnts %>% filter(h >= 40) -> chkbox_cnts2
 chkbox_cnts %>% filter(h < 40) -> chkbox_cnts1
+df <- chkbox_cnts2[1, ]
+res_lines_df %>% mutate(diffx = x + w - df$x, diffy = y - df$y,
+                        dist = sqrt(diffx^2 + diffy^2)) -> res_lines_df1
 
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
