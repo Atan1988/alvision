@@ -17,7 +17,7 @@ az_words_to_df <- function(line) {
 az_lines_to_df <- function(lines) {
   1:length(lines) %>%
     purrr::map_df(function(x){
-      print(x)
+      #print(x)
       res <- az_words_to_df(lines[[x]]) %>%
         dplyr::mutate(line_id = x)
       return(res)
