@@ -45,7 +45,8 @@ tictoc::toc()
 chkbox_cnts %>% filter(h >= 35) -> chkbox_cnts2
 chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
 
-preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_cnts2, words_df = res_lines_df)
+preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_cnts2,
+                                        words_df = res_lines_df)
 ##find out the question
 question_df <- purrr::cross_df(list(line_id = res_lines_only_df$line_id,
                                           chkbox_id = chkbox_cnts2$chkbox_id)) %>%
@@ -54,13 +55,16 @@ question_df <- purrr::cross_df(list(line_id = res_lines_only_df$line_id,
   dplyr::mutate(
     diffx = x.x  - x.y - w.y, diffy = y.x - y.y,
     dist = sqrt(diffx^2 + diffy^2)
-  ) %>% 
-  dplyr::mutate(text = gsub("\\[|\\]", "", text) %>% 
-                  stringr::str_squish()) %>% 
-  dplyr::filter(text != "") %>%
+  ) %>%
+  dplyr::mutate(text = gsub("\\[|\\]", "", text) %>%
+                  stringr::str_squish()) %>%
+  dplyr::filter(text != "")  %>%
   dplyr::group_by(chkbox_id) %>%
-  dplyr::filter(dist == min(dist)) %>%
-  dplyr::distinct()
+  dplyr::filter(diffy >= -25, diffy <= 25) %>%
+  dplyr::filter(!grepl('yes no', ignore.case = T, text)) %>%
+  dplyr::arrange(x.x) %>%
+  dplyr::distinct() %>%
+  dplyr::summarise(line_text = paste(text, collapse = " "))
 
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
