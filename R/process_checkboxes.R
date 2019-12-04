@@ -91,3 +91,28 @@ get_chkbox_options <- function(chkbox_df, words_df) {
     dplyr::distinct()
   return(preceding_word_df)
 }
+
+#'@title get checkbox questions
+#'@param chkbox_df data frame with checkbox information
+#'@param lines_df data frame with all the lines info from azure
+#'@export
+get_chkbox_questions <- function(chkbox_df, lines_df) {
+  question_df <- purrr::cross_df(list(line_id = lines_df$line_id,
+                                      chkbox_id = chkbox_df$chkbox_id)) %>%
+    dplyr::left_join(lines_df, by = 'line_id') %>%
+    dplyr::left_join(chkbox_df, by = 'chkbox_id') %>%
+    dplyr::mutate(
+      diffx = x.x  - x.y - w.y, diffy = y.x - y.y,
+      dist = sqrt(diffx^2 + diffy^2)
+    ) %>%
+    dplyr::mutate(text = gsub("\\[|\\]", "", text) %>%
+                    stringr::str_squish()) %>%
+    dplyr::filter(text != "")  %>%
+    dplyr::group_by(chkbox_id) %>%
+    dplyr::filter(diffy >= -25, diffy <= 25) %>%
+    dplyr::filter(!grepl('yes no', ignore.case = T, text)) %>%
+    dplyr::arrange(x.x) %>%
+    dplyr::distinct() %>%
+    dplyr::summarise(line_text = paste(text, collapse = " "))
+  return(question_df)
+}
