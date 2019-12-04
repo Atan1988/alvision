@@ -55,6 +55,17 @@ question_df1 <- question_df %>%
   dplyr::left_join(preceding_word_df %>% dplyr::select(chkbox_id, text), by = "chkbox_id") %>% 
   dplyr::left_join(chkbox_cnts2, by = "chkbox_id")
 
+question_df1$box <- 1:nrow(question_df1) %>% 
+  purrr::map(~quick_img_chk(question_df1[., ], img, NULL))
+
+question_df1$box_mu <- 1:nrow(question_df1) %>% 
+  purrr::map_dbl(~quick_img_chk(question_df1[., ], img, NULL)$mean() %>% 
+               reticulate::py_to_r() %>% as.numeric()) 
+
+question_df1 <- question_df1 %>% 
+  dplyr::mutate(selected = ifelse(box_mu < mean(box_mu), T, F))
+
+
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
 
