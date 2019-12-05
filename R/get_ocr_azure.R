@@ -181,16 +181,29 @@ vec_get_cropped_azure <- function(df) {
 #' @export
 ocr_img_wrapper <- function(img_file, hmax = 100, cropped_tm_dir, azure_creds,
                             box_push_to_az = F, box_highlight = F, remove_fl = F) {
-  main_img <- resize_png(img_file)
+  c(main_img, color_img) %<-% resize_png(img_file)
   ##push image to azure for overall ocr
   analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
                             endpoint = azure_creds$endpoint,
                             image_path = normalizePath(main_img ))
   analysis_res$recognitionResult$lines -> res_lines
-
+  res_lines_df <- az_lines_to_df(res_lines)
+  res_lines_only_df <- az_words_to_df(res_lines, type = 'line')
+  
   ##crop out boxes if document is a form
   crop_out_boxes(main_img, hmax = hmax) %->% c(img, img_bin, img_final_bin,
-                                              contours, bounds_df, hierarchy)
+                                               contours, bounds_df, hierarchy)
+  
+  ###get checkbox questions
+  chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
+    identify_chkboxes()
+  cutoff <- (chkbox_cnts$h %>% mean()) * 0.95
+  chkbox_cnts %>% filter(h >= cutoff) -> chkbox_cnts2
+  chkbox_cnts %>% filter(h < cutoff) -> chkbox_cnts1
+
+  question_df1 <- get_chkbox_wrapper(chkbox_df = chkbox_cnts2,
+                                     words_df = res_lines_df, lines_df = res_lines_only_df, 
+                                     img = img)
 
   ##match results from main azure api push to the cropped boxes
   bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
@@ -213,5 +226,5 @@ ocr_img_wrapper <- function(img_file, hmax = 100, cropped_tm_dir, azure_creds,
         df %>% dplyr::summarise(txt = paste(stringr::str_squish(txt), collapse = "  "))
       }, .to = '.txt') %>% tidyr::unnest(cols = '.txt')
 
-  return(parse_df1)
+  return(list(parse_df1, question_df1))
 }
