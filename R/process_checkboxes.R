@@ -10,10 +10,10 @@ identify_chkboxes <- function(img_file){
   } else {
     gray <- cv2$cvtColor(img_file, cv2$COLOR_BGR2GRAY) %>% reticulate::np_array(dtype = "uint8")
   }
-  
+
   gray <-  cv2$GaussianBlur(gray, reticulate::tuple(7L, 7L), 0L) %>%
     reticulate::np_array(dtype = "uint8")
-  
+
   # threshold the image
   c(ret, thresh1) %<-% cv2$threshold(gray ,128,255,
                                      bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
@@ -46,7 +46,7 @@ identify_chkboxes <- function(img_file){
     }
   )
   #tictoc::toc()
-  
+
   if (length(checkboxes_cnts) > 0) {
     checkboxes_cnts[sapply(checkboxes_cnts, is.null)] <- NULL
     if (length(checkboxes_cnts) == 0) return(NULL)
@@ -58,7 +58,7 @@ identify_chkboxes <- function(img_file){
           colnames(mat) <- c('x', 'y', 'w', 'h')
           return(mat)
         })
-    return(checkboxes_df %>% 
+    return(checkboxes_df %>%
              dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1)))
   }
   # 1:length(cnts) %>% purrr::map(
@@ -82,9 +82,9 @@ get_chkbox_options <- function(chkbox_df, words_df) {
     dplyr::mutate(
       diffx = x.x  - x.y - w.y, diffy = y.x - y.y,
       dist = sqrt(diffx^2 + diffy^2)
-    ) %>% 
-    dplyr::mutate(text = gsub("\\[|\\]", "", text) %>% 
-                    stringr::str_squish()) %>% 
+    ) %>%
+    dplyr::mutate(text = gsub("\\[|\\]", "", text) %>%
+                    stringr::str_squish()) %>%
     dplyr::filter(text != "") %>%
     dplyr::group_by(chkbox_id) %>%
     dplyr::filter(dist == min(dist)) %>%
@@ -115,4 +115,35 @@ get_chkbox_questions <- function(chkbox_df, lines_df) {
     dplyr::distinct() %>%
     dplyr::summarise(line_text = paste(text, collapse = " "))
   return(question_df)
+}
+
+#'@title get checkboxes questions, options, selections
+#'@param chkbox_df data frame with checkbox information
+#'@param words_df  data frame with all the words info from azure
+#'@param lines_df  data frame with all the lines info from azure
+#'@param img       the image np array of the page
+#'@export
+get_chkbox_wrapper <- function(chkbox_df, words_df, lines_df, img) {
+  preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_df,
+                                          words_df = words_df)
+  ##find out the question
+  question_df <- get_chkbox_questions(chkbox_df = chkbox_df,
+                                      lines_df = lines_df)
+
+  question_df1 <- question_df %>%
+    dplyr::left_join(preceding_word_df %>% dplyr::select(chkbox_id, text),
+                     by = "chkbox_id") %>%
+    dplyr::left_join(chkbox_df, by = "chkbox_id")
+
+  question_df1$box <- 1:nrow(question_df1) %>%
+    purrr::map(~quick_img_chk(question_df1[., ], img, NULL))
+
+  question_df1$box_mu <- 1:nrow(question_df1) %>%
+    purrr::map_dbl(~quick_img_chk(question_df1[., ], img, NULL)$mean() %>%
+                     reticulate::py_to_r() %>% as.numeric())
+
+  question_df1 <- question_df1 %>%
+    dplyr::mutate(selected = ifelse(box_mu < mean(box_mu), T, F))
+
+  return(question_df1)
 }

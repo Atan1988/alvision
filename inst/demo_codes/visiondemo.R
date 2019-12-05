@@ -45,26 +45,8 @@ tictoc::toc()
 chkbox_cnts %>% filter(h >= 35) -> chkbox_cnts2
 chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
 
-preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_cnts2,
-                                        words_df = res_lines_df)
-##find out the question
-question_df <- get_chkbox_questions(chkbox_df = chkbox_cnts2, 
-                                    lines_df = res_lines_only_df)
-
-question_df1 <- question_df %>%
-  dplyr::left_join(preceding_word_df %>% dplyr::select(chkbox_id, text), by = "chkbox_id") %>% 
-  dplyr::left_join(chkbox_cnts2, by = "chkbox_id")
-
-question_df1$box <- 1:nrow(question_df1) %>% 
-  purrr::map(~quick_img_chk(question_df1[., ], img, NULL))
-
-question_df1$box_mu <- 1:nrow(question_df1) %>% 
-  purrr::map_dbl(~quick_img_chk(question_df1[., ], img, NULL)$mean() %>% 
-               reticulate::py_to_r() %>% as.numeric()) 
-
-question_df1 <- question_df1 %>% 
-  dplyr::mutate(selected = ifelse(box_mu < mean(box_mu), T, F))
-
+question_df1 <- get_chkbox_wrapper(chkbox_df = chkbox_cnts2,
+          words_df = res_lines_df, lines_df = res_lines_only_df, img = img)
 
 tictoc::tic()
 bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
