@@ -19,31 +19,31 @@ tictoc::tic()
 c(main_img, color_img) %<-% resize_png(img_file)
 tictoc::toc()
 
-# tictoc::tic()
-# # analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
-# #                           endpoint = azure_creds$endpoint,
-# #                           image_path = normalizePath(main_img ))
-# # saveRDS(analysis_res, 'analysis_res.rds')
-# analysis_res <- readr::read_rds('analysis_res.rds')
-# analysis_res$recognitionResult$lines -> res_lines
-# tictoc::toc()
-# 
-# tictoc::tic()
-# res_lines_df <- az_lines_to_df(res_lines)
-# res_lines_only_df <- az_words_to_df(res_lines, type = 'line')
-# tictoc::toc()
-# 
-# tictoc::tic()
-# crop_out_boxes(main_img, hmax = 300) %->% c(img, img_bin, img_final_bin,
-#                                       contours, bounds_df, hierarchy)
-# tictoc::toc()
-# 
-# tictoc::tic()
-# chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
-#   identify_chkboxes()
-# tictoc::toc()
-# chkbox_cnts %>% filter(h >= 35) -> chkbox_cnts2
-# chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
+tictoc::tic()
+# analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
+#                           endpoint = azure_creds$endpoint,
+#                           image_path = normalizePath(main_img ))
+# saveRDS(analysis_res, 'analysis_res.rds')
+analysis_res <- readr::read_rds('analysis_res.rds')
+analysis_res$recognitionResult$lines -> res_lines
+tictoc::toc()
+
+tictoc::tic()
+res_lines_df <- az_lines_to_df(res_lines)
+res_lines_only_df <- az_words_to_df(res_lines, type = 'line')
+tictoc::toc()
+
+tictoc::tic()
+crop_out_boxes(main_img, hmax = 300) %->% c(img, img_bin, img_final_bin,
+                                      contours, bounds_df, hierarchy)
+tictoc::toc()
+
+tictoc::tic()
+chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
+  identify_chkboxes()
+tictoc::toc()
+chkbox_cnts %>% filter(h >= 35) -> chkbox_cnts2
+chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
 # 
 # question_df1 <- get_chkbox_wrapper(chkbox_df = chkbox_cnts2,
 #           words_df = res_lines_df, lines_df = res_lines_only_df, img = img)
