@@ -12,13 +12,13 @@ pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
 # image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
 # saveRDS(image_files, 'image_files.rds')
 image_files <- readr::read_rds('image_files.rds')
-img_file <- image_files[1]
+img_file <- image_files[3]
 
-# Read the image
-# tictoc::tic()
-# c(main_img, color_img) %<-% resize_png(img_file)
-# tictoc::toc()
-# 
+#Read the image
+tictoc::tic()
+c(main_img, color_img) %<-% resize_png(img_file)
+tictoc::toc()
+
 # tictoc::tic()
 # # analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
 # #                           endpoint = azure_creds$endpoint,
@@ -79,7 +79,7 @@ img_file <- image_files[1]
 #   dplyr::select(row, txt)
 
 tictoc::tic()
-c(parse_df1b, question_df1b) %<-% ocr_img_wrapper(img_file = image_files[1], hmax = 200,
+c(parse_df1b, question_df1b) %<-% ocr_img_wrapper(img_file = image_files[3], hmax = 200,
                         cropped_tm_dir = cropped_tm_dir, azure_creds = azure_creds,
                         box_push_to_az = F, box_highlight = F, remove_fl = F)
 tictoc::toc()
