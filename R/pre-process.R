@@ -150,12 +150,14 @@ crop_out_obj <- function(image_file, output_cropped = F, output_dir = NULL) {
 
 #' @title remove non black and white color from an image to remove handwritten
 #' @param img_file the file path of the image
+#' @param min_clr minimum color number to filter
+#' @param max_clr maximum color number to filter
 #' @export
-remove_color <- function(img_file) {
+remove_color <- function(img_file, min_clr = 100, max_clr = 250) {
   image <-  cv2$imread(normalizePath(img_file))
-  ch1 <- which(image[,,1] > 100 & image[,,1] < 250)
-  ch2 <- which(image[,,2] > 100 & image[,,2] < 250)
-  ch3 <- which(image[,,3] > 100 & image[,,3] < 250)
+  ch1 <- which(image[,,1] > min_clr & image[,,1] < max_clr)
+  ch2 <- which(image[,,2] > min_clr & image[,,2] < max_clr)
+  ch3 <- which(image[,,3] > min_clr & image[,,3] < max_clr)
   ch <- c(ch1, ch2, ch3) %>% unique()
   image[,,1][ch] <- 255
   image[,,2][ch] <- 255

@@ -177,8 +177,16 @@ ptwise_chk_approx <- function(approx) {
 #'@export
 quick_img_chk <- function(df, img, out_fl = 'new.png') {
   y <- df$y; x <- df$x; w <- df$w; h <- df$h
-  new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
-    reticulate::np_array('uint8')
+  img_dim <- img$shape %>% reticulate::py_to_r()
+  if (length(img_dim) == 2) {
+    new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
+      reticulate::np_array('uint8')
+  }
+  if (length(img_dim) == 3) {
+    new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w), ] %>%
+      reticulate::np_array('uint8')
+  }
+
   if (!is.null(out_fl)) cv2$imwrite(out_fl, new_img)
   return(new_img)
 }

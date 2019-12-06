@@ -4,10 +4,14 @@
 \alias{remove_color}
 \title{remove non black and white color from an image to remove handwritten}
 \usage{
-remove_color(img_file)
+remove_color(img_file, min_clr = 100, max_clr = 250)
 }
 \arguments{
 \item{img_file}{the file path of the image}
+
+\item{min_clr}{minimum color number to filter}
+
+\item{max_clr}{maximum color number to filter}
 }
 \description{
 remove non black and white color from an image to remove handwritten

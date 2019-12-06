@@ -8,7 +8,8 @@ identify_chkboxes <- function(img_file){
     image <-  cv2$imread(normalizePath(img_file)) %>% reticulate::np_array(dtype = "uint8")
     gray <- cv2$cvtColor(image, cv2$COLOR_BGR2GRAY) %>% reticulate::np_array(dtype = "uint8")
   } else {
-    gray <- cv2$cvtColor(img_file, cv2$COLOR_BGR2GRAY) %>% reticulate::np_array(dtype = "uint8")
+    gray <- cv2$cvtColor(img_file, cv2$COLOR_BGR2GRAY) %>%
+      reticulate::np_array(dtype = "uint8")
   }
 
   gray <-  cv2$GaussianBlur(gray, reticulate::tuple(7L, 7L), 0L) %>%
@@ -68,6 +69,23 @@ identify_chkboxes <- function(img_file){
   #     cv2$imwrite(file.path('tmp1', paste0(i,'.png')), new_img)
   #   }
   # )
+}
+
+#'@title get checkboxes by parts
+#'@param bounds_df identify bounds data frame
+#'@param color_img colored image
+#'@export
+identify_chkboxes_by_parts <- function(bounds_df, color_img) {
+  removed_img <- remove_color(color_img) %>% reticulate::np_array('uint8')
+  chkbox_cnts <- 1:nrow(bounds_df) %>%
+    purrr::map(function(l) {
+      row <- bounds_df[l, ]
+      part_img <- quick_img_chk(row, removed_img, NULL)
+      res <- part_img %>% identify_chkboxes()
+      if (!is.null(res)) res <- res %>%
+        dplyr::mutate(x = x + row$x, y = y + row$y)
+    }) %>% bind_rows()
+  return(chkbox_cnts)
 }
 
 #'@title get checkbox options
