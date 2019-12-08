@@ -80,6 +80,11 @@ get_col_row <- function(x) {
                                     y > 1e-6, 1, 0)
     ) %>%
     dplyr::filter(peak == 1)
+
+  if(nrow(des_df) == 0) des_df <- tibble::tibble(x = des$x, y = des$y) %>%
+                             dplyr::filter(x == min(x)) %>%
+                             dplyr::mutate(peak = 1, trough = 0)
+
   return(des_df)
 }
 
