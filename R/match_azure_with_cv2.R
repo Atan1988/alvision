@@ -31,7 +31,7 @@ az_to_cv2_box <- function(bounds_df, res_lines) {
     })
   not_matched_bounds_df$az <- not_matched_idx %>% purrr::map(~res_lines[.])
 
-  bounds_dfb <- bind_rows(bounds_df, not_matched_bounds_df)
+  bounds_dfb <- dplyr::bind_rows(bounds_df, not_matched_bounds_df)
   bounds_df1 <- add_rc_bbox(bbox_df = bounds_dfb)
 
   return(bounds_df1)

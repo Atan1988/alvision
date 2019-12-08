@@ -187,6 +187,8 @@ ocr_img_wrapper <- function(img_file, hmax = 100, cropped_tm_dir, azure_creds,
                             endpoint = azure_creds$endpoint,
                             image_path = normalizePath(main_img ))
   analysis_res$recognitionResult$lines -> res_lines
+  if (length(res_lines) == 0) return(list(tibble::tibble(), tibble::tibble()))
+
   res_lines_df <- az_lines_to_df(res_lines)
   res_lines_only_df <- az_words_to_df(res_lines, type = 'line')
 
@@ -200,8 +202,8 @@ ocr_img_wrapper <- function(img_file, hmax = 100, cropped_tm_dir, azure_creds,
   # chkbox_cnts <- remove_color(color_img) %>% reticulate::np_array('uint8') %>%
   #   identify_chkboxes()
   cutoff <- (chkbox_cnts$h %>% mean()) * 0.95
-  chkbox_cnts %>% filter(h >= cutoff) -> chkbox_cnts2
-  chkbox_cnts %>% filter(h < cutoff) -> chkbox_cnts1
+  chkbox_cnts %>% dplyr::filter(h >= cutoff) -> chkbox_cnts2
+  chkbox_cnts %>% dplyr::filter(h < cutoff) -> chkbox_cnts1
 
   question_df1 <- get_chkbox_wrapper(chkbox_df = chkbox_cnts2,
                                      words_df = res_lines_df, lines_df = res_lines_only_df,

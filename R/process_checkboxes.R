@@ -84,7 +84,7 @@ identify_chkboxes_by_parts <- function(bounds_df, color_img) {
       res <- part_img %>% identify_chkboxes()
       if (!is.null(res)) res <- res %>%
         dplyr::mutate(x = x + row$x, y = y + row$y)
-    }, .progress = T) %>% bind_rows() %>%
+    }, .progress = T) %>% dplyr::bind_rows() %>%
     dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
   return(chkbox_cnts)
 }
