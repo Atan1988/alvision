@@ -85,6 +85,14 @@ c(parse_df1b, question_df1b) %<-% ocr_img_wrapper(img_file = image_files[3],
                         box_push_to_az = F, box_highlight = F, remove_fl = F)
 tictoc::toc()
 
+tictoc::tic()
+results <- image_files %>%
+  furrr::future_map(~ocr_img_wrapper(img_file = .,
+         hmax = 300, cropped_tm_dir = cropped_tm_dir,
+         azure_creds = azure_creds, box_push_to_az = F,
+         box_highlight = F, remove_fl = F))
+tictoc::toc()
+
 parse_df2b <- parse_df1b %>% dplyr::arrange(row, col, x, y) %>%
   dplyr::group_by(row, col) %>% dplyr::summarise(txt = paste0(txt, collapse = ";")) %>%
   dplyr::select(row, col, txt) %>%
