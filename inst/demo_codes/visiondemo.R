@@ -39,13 +39,7 @@ crop_out_boxes(main_img, hmax = 300) %->% c(img, img_bin, img_final_bin,
 tictoc::toc()
 
 tictoc::tic()
-removed_img <- remove_color(color_img) %>% reticulate::np_array('uint8')
-chkbox_cnts <- removed_img %>%
-  identify_chkboxes()
-tictoc::toc()
-
-tictoc::tic()
-chkbox_cntsb <- identify_chkboxes_by_parts(bounds_df, color_img)
+chkbox_cnts <- identify_chkboxes_by_parts(bounds_df, color_img)
 tictoc::toc()
 
 chkbox_cnts %>% filter(h >= 35) -> chkbox_cnts2

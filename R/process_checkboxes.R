@@ -29,7 +29,7 @@ identify_chkboxes <- function(img_file){
   threshold_max_area <- 3000;
   threshold_min_area <- 200
   #tictoc::tic()
-  checkboxes_cnts <- cnts %>% purrr::map(
+  checkboxes_cnts <- cnts %>% furrr::future_map(
     function(c) {
       area <-  cv2$contourArea(c)
       if (area > threshold_max_area | area < threshold_min_area) return(NULL)
@@ -52,13 +52,13 @@ identify_chkboxes <- function(img_file){
     checkboxes_cnts[sapply(checkboxes_cnts, is.null)] <- NULL
     if (length(checkboxes_cnts) == 0) return(NULL)
     checkboxes_df <- checkboxes_cnts %>%
-      purrr::map_df(
+      furrr::future_map(
         function(c) {
           mat <- c %>% cv2$boundingRect() %>%
             unlist() %>% t() %>% tibble::as_tibble()
           colnames(mat) <- c('x', 'y', 'w', 'h')
           return(mat)
-        })
+        }) %>% dplyr::bind_rows()
     return(checkboxes_df %>%
              dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1)))
   }
@@ -78,13 +78,13 @@ identify_chkboxes <- function(img_file){
 identify_chkboxes_by_parts <- function(bounds_df, color_img) {
   removed_img <- remove_color(color_img) %>% reticulate::np_array('uint8')
   chkbox_cnts <- 1:nrow(bounds_df) %>%
-    purrr::map(function(l) {
+    furrr::future_map(function(l) {
       row <- bounds_df[l, ]
       part_img <- quick_img_chk(row, removed_img, NULL)
       res <- part_img %>% identify_chkboxes()
       if (!is.null(res)) res <- res %>%
         dplyr::mutate(x = x + row$x, y = y + row$y)
-    }) %>% bind_rows() %>%
+    }, .progress = T) %>% bind_rows() %>%
     dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
   return(chkbox_cnts)
 }

@@ -19,7 +19,8 @@ Imports:
     purrrlyr,
     tidyr,
     magrittr,
-    purrr
+    purrr,
+    furrr
 Depends: 
     zeallot
 Suggests: 
