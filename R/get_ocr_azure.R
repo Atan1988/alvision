@@ -206,8 +206,8 @@ ocr_img_wrapper <- function(img_file, hmax = 100, cropped_tm_dir, azure_creds,
   chkbox_cnts %>% dplyr::filter(h < cutoff) -> chkbox_cnts1
 
   question_df1 <- get_chkbox_wrapper(chkbox_df = chkbox_cnts2,
-                                     words_df = res_lines_df, lines_df = res_lines_only_df,
-                                     img = img)
+                        words_df = res_lines_df, lines_df = res_lines_only_df,
+                        img = img)
 
   ##match results from main azure api push to the cropped boxes
   bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)

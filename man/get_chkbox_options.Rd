@@ -4,12 +4,14 @@
 \alias{get_chkbox_options}
 \title{get checkbox options}
 \usage{
-get_chkbox_options(chkbox_df, words_df)
+get_chkbox_options(chkbox_df, words_df, question_df)
 }
 \arguments{
 \item{chkbox_df}{data frame with checkbox information}
 
 \item{words_df}{data frame with all the words info from azure}
+
+\item{question_df}{data frame with all the questions}
 }
 \description{
 get checkbox options

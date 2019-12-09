@@ -92,12 +92,20 @@ identify_chkboxes_by_parts <- function(bounds_df, color_img) {
 #'@title get checkbox options
 #'@param chkbox_df data frame with checkbox information
 #'@param words_df data frame with all the words info from azure
+#'@param question_df data frame with all the questions
 #'@export
-get_chkbox_options <- function(chkbox_df, words_df) {
+get_chkbox_options <- function(chkbox_df, words_df, question_df) {
+  chkbox_df1 <- chkbox_df %>% dplyr::inner_join(question_df, by = 'chkbox_id')%>%
+    dplyr::group_by(line_text) %>% dplyr::mutate(row = floor(mean(y))) %>%
+    dplyr::arrange(line_text, x) %>%
+    dplyr::mutate(leadx = dplyr::lead(x, 1, default = Inf)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-line_text)
+
   preceding_word_df <- purrr::cross_df(list(combo_id = words_df$combo_id,
-                                            chkbox_id = chkbox_df$chkbox_id)) %>%
+                                            chkbox_id = chkbox_df1$chkbox_id)) %>%
     dplyr::left_join(words_df, by = 'combo_id') %>%
-    dplyr::left_join(chkbox_df, by = 'chkbox_id') %>%
+    dplyr::left_join(chkbox_df1, by = 'chkbox_id') %>%
     dplyr::mutate(
       diffx = x.x  - x.y - w.y, diffy = y.x - y.y,
       dist = sqrt(diffx^2 + diffy^2)
@@ -105,9 +113,11 @@ get_chkbox_options <- function(chkbox_df, words_df) {
     dplyr::mutate(text = gsub("\\[|\\]", "", text) %>%
                     stringr::str_squish()) %>%
     dplyr::filter(text != "") %>%
+    dplyr::filter(abs(diffy) <= 25, diffx > -25, x.x <= leadx)%>%
+    dplyr::distinct() %>%
     dplyr::group_by(chkbox_id) %>%
-    dplyr::filter(dist == min(dist)) %>%
-    dplyr::distinct()
+    dplyr::summarise(text = paste(text, collapse = " "))
+
   return(preceding_word_df)
 }
 
@@ -143,11 +153,13 @@ get_chkbox_questions <- function(chkbox_df, lines_df) {
 #'@param img       the image np array of the page
 #'@export
 get_chkbox_wrapper <- function(chkbox_df, words_df, lines_df, img) {
-  preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_df,
-                                          words_df = words_df)
+
   ##find out the question
   question_df <- get_chkbox_questions(chkbox_df = chkbox_df,
                                       lines_df = lines_df)
+  ##find choice options
+  preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_df,
+                  words_df = words_df, question_df = question_df)
 
   question_df1 <- question_df %>%
     dplyr::left_join(preceding_word_df %>% dplyr::select(chkbox_id, text),
