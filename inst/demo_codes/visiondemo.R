@@ -79,7 +79,7 @@ chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
 #   dplyr::select(row, txt)
 
 tictoc::tic()
-c(parse_df1b, question_df1b) %<-% ocr_img_wrapper(img_file = image_files[3],
+c(parse_df1b, question_df1b) %<-% ocr_img_wrapper(img_file = image_files[6],
                                                   hmax = 300,
                         cropped_tm_dir = cropped_tm_dir, azure_creds = azure_creds,
                         box_push_to_az = F, box_highlight = F, remove_fl = F)
