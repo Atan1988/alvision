@@ -112,3 +112,7 @@ question_data <- 1:length(results) %>%
   purrr::map_df(function(pg) results[[pg]][[2]] %>% dplyr::mutate(page = pg)) %>%
   dplyr::filter(w > (mean(w) - 3))
 
+
+tictoc::tic()
+
+tictoc::toc()

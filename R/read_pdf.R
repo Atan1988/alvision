@@ -13,7 +13,7 @@ ocr_pdf <- function(pdf_file, hmax = 200, cropped_tm_dir, azure_creds,
   ##convert pdf to images
   image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
   
-  res <- image_files %>% purrr::map(~ocr_img_wrapper(img_file = ., hmax = hmax,
+  res <- image_files %>% furrr::future_map(~ocr_img_wrapper(img_file = ., hmax = hmax,
                     cropped_tm_dir = cropped_tm_dir, azure_creds = azure_creds,
                     box_push_to_az = box_push_to_az, box_highlight = box_highlight, 
                     remove_fl = remove_fl))
