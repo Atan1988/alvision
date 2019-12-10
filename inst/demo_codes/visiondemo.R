@@ -15,7 +15,7 @@ image_files <- readr::read_rds('image_files.rds')
 
 tictoc::tic()
 results <- image_files %>%
-  furrr::future_map(~ocr_img_wrapper(img_file = .,
+  purrr::map(~ocr_img_wrapper(img_file = .,
                                      hmax = 300, cropped_tm_dir = cropped_tm_dir,
                                      azure_creds = azure_creds, box_push_to_az = F,
                                      box_highlight = F, remove_fl = F))
