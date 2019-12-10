@@ -9,9 +9,18 @@ azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
 pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
-#image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
+image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
 saveRDS(image_files, 'image_files.rds')
 image_files <- readr::read_rds('image_files.rds')
+
+tictoc::tic()
+results <- image_files %>%
+  furrr::future_map(~ocr_img_wrapper(img_file = .,
+                                     hmax = 300, cropped_tm_dir = cropped_tm_dir,
+                                     azure_creds = azure_creds, box_push_to_az = F,
+                                     box_highlight = F, remove_fl = F))
+tictoc::toc()
+
 img_file <- image_files[3]
 
 #Read the image
@@ -97,13 +106,7 @@ parse_df3b <- parse_df1b %>% dplyr::arrange(row, col, x, y) %>%
   dplyr::select(row, txt)
 
 
-tictoc::tic()
-results <- image_files %>%
-  furrr::future_map(~ocr_img_wrapper(img_file = .,
-         hmax = 300, cropped_tm_dir = cropped_tm_dir,
-         azure_creds = azure_creds, box_push_to_az = F,
-         box_highlight = F, remove_fl = F))
-tictoc::toc()
+
 
 text_data <- 1:length(results) %>%
     purrr::map_df(function(pg) results[[pg]][[1]] %>% dplyr::mutate(page = pg))
