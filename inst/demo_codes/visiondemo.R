@@ -3,8 +3,8 @@ library(dplyr)
 library(zeallot)
 library(alvision)
 
-reticulate::use_condaenv('computer_vision')
-#reticulate::use_virtualenv('/opt/virtualenvs/r-tensorflow')
+#reticulate::use_condaenv('computer_vision')
+reticulate::use_virtualenv('/opt/virtualenvs/r-tensorflow')
 azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
@@ -88,7 +88,7 @@ chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
 #   dplyr::select(row, txt)
 
 tictoc::tic()
-c(parse_df1b, question_df1b) %<-% ocr_img_wrapper(img_file = image_files[1],
+c(parse_df1b, question_df1b) %<-% ocr_img_wrapper(img_file = image_files[7],
                                                   hmax = 300,
                         cropped_tm_dir = cropped_tm_dir, azure_creds = azure_creds,
                         box_push_to_az = F, box_highlight = F, remove_fl = F)
@@ -118,5 +118,5 @@ question_data <- 1:length(results) %>%
 
 tictoc::tic()
 results <- ocr_pdf(pdf_file = pdf_file, hmax = 300, cropped_tm_dir, azure_creds,
-                   box_push_to_az = F, box_highlight = F, remove_fl = F)
+                   box_push_to_az = F, box_highlight = F, remove_fl = F, dpi = 400)
 tictoc::toc()
