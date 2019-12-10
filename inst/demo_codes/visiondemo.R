@@ -9,8 +9,8 @@ azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
 pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
-# image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
-# saveRDS(image_files, 'image_files.rds')
+#image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
+saveRDS(image_files, 'image_files.rds')
 image_files <- readr::read_rds('image_files.rds')
 img_file <- image_files[3]
 
@@ -115,5 +115,5 @@ question_data <- 1:length(results) %>%
 
 tictoc::tic()
 results <- ocr_pdf(pdf_file = pdf_file, hmax = 300, cropped_tm_dir, azure_creds,
-                   box_push_to_az = F, box_highlight = F, remove_fl = F) 
+                   box_push_to_az = F, box_highlight = F, remove_fl = F)
 tictoc::toc()
