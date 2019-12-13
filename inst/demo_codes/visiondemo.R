@@ -21,7 +21,7 @@ results <- image_files %>%
                                      box_highlight = F, remove_fl = F))
 tictoc::toc()
 
-img_file <- image_files[3]
+img_file <- image_files[1]
 
 #Read the image
 tictoc::tic()
@@ -53,10 +53,10 @@ tictoc::toc()
 
 chkbox_cnts %>% filter(h >= 35) -> chkbox_cnts2
 chkbox_cnts %>% filter(h < 35) -> chkbox_cnts1
-#
-# question_df1 <- get_chkbox_wrapper(chkbox_df = chkbox_cnts2,
-#           words_df = res_lines_df, lines_df = res_lines_only_df, img = img)
-#
+
+question_df1 <- get_chkbox_wrapper(chkbox_df = chkbox_cnts,
+          words_df = res_lines_df, lines_df = res_lines_only_df, img = img)
+
 # tictoc::tic()
 # bounds_df1 <- az_to_cv2_box(bounds_df, res_lines)
 #
@@ -106,15 +106,6 @@ parse_df3b <- parse_df1b %>% dplyr::arrange(row, col, x, y) %>%
   dplyr::select(row, txt)
 
 
-
-
-text_data <- 1:length(results) %>%
-    purrr::map_df(function(pg) results[[pg]][[1]] %>% dplyr::mutate(page = pg))
-
-question_data <- 1:length(results) %>%
-  purrr::map_df(function(pg) results[[pg]][[2]] %>% dplyr::mutate(page = pg)) %>%
-  dplyr::filter(w > (mean(w) - 3))
-
 library(profvis)
 
 
@@ -124,3 +115,6 @@ results <- ocr_pdf(pdf_file = pdf_file, hmax = 300, cropped_tm_dir, azure_creds,
                    box_push_to_az = F, box_highlight = F, remove_fl = F, dpi = 400)
 #})
 tictoc::toc()
+
+texts <- get_text_df(results)
+questions <- get_question_df(results)
