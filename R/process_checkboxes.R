@@ -88,7 +88,7 @@ identify_chkboxes_by_parts <- function(bounds_df, color_img) {
     }) %>% dplyr::bind_rows() %>%
     dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
   
-  if (nrow(res_main)) return(chkbox_cnts)
+  if (is.null(res_main)) return(chkbox_cnts)
   
   res_ids <- purrr::cross_df(list(id1 = res_main$chkbox_id, id2 = chkbox_cnts$chkbox_id)) %>% 
     dplyr::inner_join(res_main %>% dplyr::select(id1:=chkbox_id, x, y), by = 'id1') %>%
