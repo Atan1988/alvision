@@ -39,7 +39,7 @@ def crop_out_boxes(img_file, hmax):
     (thresh, img_final_bin) = cv2.threshold(img_final_bin, 128,255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     #cv2.imwrite("img_final_bin.jpg",img_final_bin)
     # Find contours for image, which will detect all the boxes
-    im2, contours, hierarchy = cv2.findContours(img_final_bin, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(img_final_bin, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     contours, boundingBoxes = sort_contours(contours, "bottom-to-top")
     bounds = get_crop_bounds(contours, hmax)
     return (img, img_bin, img_final_bin, contours, bounds, hierarchy)
