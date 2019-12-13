@@ -118,3 +118,5 @@ tictoc::toc()
 
 texts <- get_text_df(results)
 questions <- get_question_df(results)
+
+saveRDS(results, 'inst/data/ace form res.rds')
