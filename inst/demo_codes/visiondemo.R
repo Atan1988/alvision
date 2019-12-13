@@ -115,8 +115,12 @@ question_data <- 1:length(results) %>%
   purrr::map_df(function(pg) results[[pg]][[2]] %>% dplyr::mutate(page = pg)) %>%
   dplyr::filter(w > (mean(w) - 3))
 
+library(profvis)
+
 
 tictoc::tic()
+#profvis({
 results <- ocr_pdf(pdf_file = pdf_file, hmax = 300, cropped_tm_dir, azure_creds,
                    box_push_to_az = F, box_highlight = F, remove_fl = F, dpi = 400)
+#})
 tictoc::toc()
