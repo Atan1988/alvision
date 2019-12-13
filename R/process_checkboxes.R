@@ -77,7 +77,7 @@ identify_chkboxes <- function(img_file){
 #'@export
 identify_chkboxes_by_parts <- function(bounds_df, color_img) {
   removed_img <- remove_color(color_img) %>% reticulate::np_array('uint8')
-  res_main <- removed_img %>% identify_chkboxes() %>% arrange(y, x)
+  res_main <- removed_img %>% identify_chkboxes() #%>% arrange(y, x)
   chkbox_cnts <- 1:nrow(bounds_df) %>%
     purrr::map(function(l) {
       row <- bounds_df[l, ]
@@ -87,6 +87,8 @@ identify_chkboxes_by_parts <- function(bounds_df, color_img) {
         dplyr::mutate(x = x + row$x, y = y + row$y)
     }) %>% dplyr::bind_rows() %>%
     dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
+  
+  if (nrow(res_main)) return(chkbox_cnts)
   
   res_ids <- purrr::cross_df(list(id1 = res_main$chkbox_id, id2 = chkbox_cnts$chkbox_id)) %>% 
     dplyr::inner_join(res_main %>% dplyr::select(id1:=chkbox_id, x, y), by = 'id1') %>%
@@ -98,7 +100,8 @@ identify_chkboxes_by_parts <- function(bounds_df, color_img) {
   chkbox_cnts1 <- dplyr::bind_rows(
     chkbox_cnts, 
     res_main %>% filter(chkbox_id %in% res_ids)
-  )
+  )%>% dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
+  
   return(chkbox_cnts1)
 }
 
