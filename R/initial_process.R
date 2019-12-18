@@ -41,7 +41,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
     reticulate::np_array(dtype = "uint8")
 
   ###check dimension
-  raw_dim <- grayed$shape %>% reticulate::py_to_r() %>% unlist()
+  raw_dim <- get_img_dim(grayed) 
 
   if (max(raw_dim) > 4000) {
     dim_scale <- 4000 / max(raw_dim)
@@ -50,7 +50,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
       reticulate::np_array(dtype = "uint8")
     orig_img <- orig_img %>% cv2$resize(reticulate::tuple(dim_sz[2], dim_sz[1])) %>%
       reticulate::np_array(dtype = "uint8")
-    raw_dim <- grayed$shape %>% reticulate::py_to_r() %>% unlist()
+    raw_dim <- get_img_dim(grayed)
   }
 
   ##write gray image out

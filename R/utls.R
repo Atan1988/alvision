@@ -128,12 +128,14 @@ az_line_area  <- function(line) {
                 bbox[3] * bbox[4]}) %>% sum()
 }
 
-#'@title get magick image dimension
-#'@param x magick image
+#'@title get cv2 image dimension
+#'@param np image
 #'@export
-get_img_dim <- function(x) {
-  magick::image_info(x) %>% dplyr::select(width, height) %>%
-    .[1,] %>% t() %>% as.vector()
+get_img_dim <- function(np) {
+  raw_dim <- np$shape 
+  if (class(raw_dim) != 'list') raw_dim <- raw_dim %>% reticulate::py_to_r() 
+  raw_dim <- raw_dim %>% unlist()
+  return(raw_dim)
 }
 
 #'@title check whether two approx points are really close
