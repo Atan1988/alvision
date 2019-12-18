@@ -12,7 +12,6 @@ LazyData: true
 RoxygenNote: 7.0.2
 Imports: 
     googleAuthR,
-    pdftools,
     dplyr,
     stringr,
     reticulate,
