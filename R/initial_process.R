@@ -35,28 +35,26 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
                                 strsplit(img_file, '/') %>% .[[1]] %>% .[length(.)])
   ) %>% gsub('\\.pdf', '\\.png', .)
   ###first convert to gray
-  orig_img <- cv2$imread(normalizePath(img_file), 1L) %>%
-    reticulate::np_array(dtype = "uint8")
-  grayed <- cv2$imread(normalizePath(img_file), 0L) %>%
-    reticulate::np_array(dtype = "uint8")
+  orig_img1 <- Rvision::image(img_file)
+  grayed1 <- Rvision::changeColorSpace(orig_img1, 'GRAY')
 
   ###check dimension
-  raw_dim <- get_img_dim(grayed) 
+  raw_dim <- grayed1$dim()
 
   if (max(raw_dim) > 4000) {
     dim_scale <- 4000 / max(raw_dim)
     dim_sz <- floor( raw_dim * dim_scale) %>% as.integer()
-    grayed <- grayed %>% cv2$resize(reticulate::tuple(dim_sz[2], dim_sz[1])) %>%
-      reticulate::np_array(dtype = "uint8")
-    orig_img <- orig_img %>% cv2$resize(reticulate::tuple(dim_sz[2], dim_sz[1])) %>%
-      reticulate::np_array(dtype = "uint8")
-    raw_dim <- get_img_dim(grayed)
+    
+    grayed1 <- Rvision::resize(grayed1, height = dim_sz[1], width = dim_sz[2])
+      
+    orig_img1 <- Rvision::resize(orig_img1, height = dim_sz[1], width = dim_sz[2])
+    
+    raw_dim <- grayed1$dim()
   }
 
   ##write gray image out
-  cv2$imwrite(resize_fl, grayed)
-  cv2$imwrite(resize_fl1, orig_img)
-
+  Rvision::write.Image(grayed1, resize_fl)
+  Rvision::write.Image(orig_img1, resize_fl1)
   ###check image size
   img_sz <- file.size(resize_fl) / (1024^2)
 
@@ -64,17 +62,15 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
   if (img_sz > file_size_limit) {
      scale <- sqrt(file_size_limit / img_sz)
      sz <- floor(raw_dim * scale) %>% as.integer()
-     cv2$imread(normalizePath(resize_fl), 0L) %>%
-       reticulate::np_array(dtype = "uint8") %>%
-       cv2$resize(reticulate::tuple(sz[2], sz[1])) %>%
-       reticulate::np_array(dtype = "uint8") %>%
-       cv2$imwrite(resize_fl, .)
+
+     grayed1 %>% 
+       Rvision::resize(height = sz[1], width = sz[2]) %>% 
+       Rvision::write.Image(resize_fl)
 
      ##write out fixed original color image
-     orig_img %>%
-       cv2$resize(reticulate::tuple(sz[2], sz[1])) %>%
-       reticulate::np_array(dtype = "uint8")%>%
-       cv2$imwrite(resize_fl1, .)
+     orig_img1 %>% 
+       Rvision::resize(height = sz[1], width = sz[2]) %>% 
+       Rvision::write.Image(resize_fl1)
   }
 
   return(c(resize_fl, resize_fl1))
