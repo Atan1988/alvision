@@ -99,7 +99,7 @@ identify_chkboxes_by_parts <- function(bounds_df, color_img) {
   
   chkbox_cnts1 <- dplyr::bind_rows(
     chkbox_cnts, 
-    res_main %>% filter(chkbox_id %in% res_ids)
+    res_main %>% dplyr::filter(chkbox_id %in% res_ids)
   )%>% dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
   
   return(chkbox_cnts1)

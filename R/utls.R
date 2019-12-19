@@ -133,7 +133,7 @@ az_line_area  <- function(line) {
 #'@export
 get_img_dim <- function(np) {
   raw_dim <- np$shape 
-  if (class(raw_dim) != 'list') raw_dim <- raw_dim %>% reticulate::py_to_r() 
+  if (class(raw_dim)[1] != 'list') raw_dim <- raw_dim %>% reticulate::py_to_r() 
   raw_dim <- raw_dim %>% unlist()
   return(raw_dim)
 }
@@ -184,7 +184,7 @@ ptwise_chk_approx <- function(approx) {
 #'@export
 quick_img_chk <- function(df, img, out_fl = 'new.png') {
   y <- df$y; x <- df$x; w <- df$w; h <- df$h
-  img_dim <- img$shape %>% reticulate::py_to_r()
+  img_dim <- get_img_dim(img)
   if (length(img_dim) == 2) {
     new_img <- img %>% reticulate::py_to_r() %>% .[y:(y+h), x:(x+w)] %>%
       reticulate::np_array('uint8')
