@@ -10,8 +10,11 @@ cropped_tm_dir <- 'inst/data/tmp_cropped/'
 image_files <- readr::read_rds('image_files.rds')
 img_file <- image_files[1]
 
+library(profvis)
 tictoc::tic()
-c(main_img, color_img) %<-% resize_png(img_file)
+profvis({
+  c(main_img, color_img) %<-% resize_png(img_file)
+})
 tictoc::toc()
 
 ##crop out boxes if document is a form

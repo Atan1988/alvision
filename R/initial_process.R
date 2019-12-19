@@ -40,7 +40,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
 
   ###check dimension
   raw_dim <- grayed1$dim()
-
+  
   if (max(raw_dim) > 4000) {
     dim_scale <- 4000 / max(raw_dim)
     dim_sz <- floor( raw_dim * dim_scale) %>% as.integer()
@@ -55,6 +55,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
   ##write gray image out
   Rvision::write.Image(grayed1, resize_fl)
   Rvision::write.Image(orig_img1, resize_fl1)
+
   ###check image size
   img_sz <- file.size(resize_fl) / (1024^2)
 
