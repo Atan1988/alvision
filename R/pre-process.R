@@ -155,6 +155,7 @@ crop_out_obj <- function(image_file, output_cropped = F, output_dir = NULL) {
 #' @export
 remove_color <- function(img_file, min_clr = 100, max_clr = 250) {
   image <-  cv2$imread(normalizePath(img_file))
+  
   ch1 <- which(image[,,1] > min_clr & image[,,1] < max_clr)
   ch2 <- which(image[,,2] > min_clr & image[,,2] < max_clr)
   ch3 <- which(image[,,3] > min_clr & image[,,3] < max_clr)
@@ -163,5 +164,6 @@ remove_color <- function(img_file, min_clr = 100, max_clr = 250) {
   image[,,2][ch] <- 255
   image[,,3][ch] <- 255
 
+  image <- cv2$cvtColor(image%>% reticulate::np_array('uint8'), cv2$COLOR_BGR2GRAY)
   return(image)
 }

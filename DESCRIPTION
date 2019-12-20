@@ -19,7 +19,8 @@ Imports:
     tidyr,
     magrittr,
     purrr,
-    furrr
+    furrr,
+    Rvision
 Depends: 
     zeallot
 Suggests: 
