@@ -19,15 +19,10 @@ Imports:
     tidyr,
     magrittr,
     purrr,
-    furrr,
-    Rcpp,
-    RcppArmadillo
+    furrr
 Depends: 
     zeallot
 Suggests: 
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-LinkingTo: 
-    Rcpp,
-    RcppArmadillo
