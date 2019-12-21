@@ -149,7 +149,7 @@ ptwise_chk_approx <- function(approx, mode = 'py') {
       y = approx[,,2]
     ) 
   } else {
-    ptdf <- as_tibble(approx[,c('x', 'y')])
+    ptdf <- tibble::as_tibble(approx[,c('x', 'y')])
   }
   
   ptdf <- ptdf %>%
@@ -224,7 +224,7 @@ quick_img_chkR <- function(df, img, out_fl = 'new.png') {
 #'@param img_max_y the max y variable of image
 #'@export
 boundingRect <- function(cnt_mat, img_max_y){
-  tibble(x = min(cnt_mat[, 'x']), y1 = min(cnt_mat[, 'y']),
+  tibble::tibble(x = min(cnt_mat[, 'x']), y1 = min(cnt_mat[, 'y']),
     w = max(cnt_mat[,'x']) - min(cnt_mat[,'x']), 
     h = max(cnt_mat[,'y']) - min(cnt_mat[,'y']), y = img_max_y - y1 - h)
 }

@@ -1,4 +1,5 @@
 cv2 <- NULL
+pdf2image <- NULL
 ipywidgets <- NULL
 np <- NULL
 requests <- NULL
