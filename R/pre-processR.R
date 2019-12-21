@@ -2,63 +2,112 @@
 #'@param img_file file of image
 #'@param hmax max height allowed for boxes
 #'@export
-crop_out_boxes <- function(img_file, hmax){
+crop_out_boxesR <- function(img_file, hmax){
   # Read the image
-  
-  img <-  cv2$imread(normalizePath(img_file), 0L) %>%
-    reticulate::np_array(dtype = "uint8")
-
-  tic()
   img1 <- Rvision::image(img_file)
-  toc()
+
   # Thresholding the image
-  tic()
-  c(thresh, img_bin) %<-% cv2$threshold(img, 128, 255, bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
-  # Invert the image
-  img_bin <- 255-img_bin
-  toc()
-  
+  img_bin1 <- Rvision::adaptiveThreshold(img1)
  
   # Defining a kernel length
-  kernel_length <- ((np$array(img) %>% dim() %>% .[2])%/% 100) %>% as.integer()
+  kernel_length1 <- as.integer(img1$dim()[2] %/% 100)
   # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
-  verticle_kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, reticulate::tuple(1L, kernel_length))%>%
-    reticulate::np_array(dtype = "uint8")
+  verticle_kernel1 <- matrix(rep(1, kernel_length1), ncol = 1)
   # A horizontal kernel of (kernel_length X 1), which will help to detect all the horizontal line from the image.
-  hori_kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, reticulate::tuple(kernel_length, 1L)) %>%
-    reticulate::np_array(dtype = "uint8")
+  hori_kernel1 <- matrix(rep(1, kernel_length1), nrow = 1)
   # A kernel of (3 X 3) ones.
-  kernel <- cv2$getStructuringElement(cv2$MORPH_RECT, reticulate::tuple(3L, 3L)) %>%
-    reticulate::np_array(dtype = "uint8")
+  kernel1 <- matrix(rep(1, 9), nrow =3)
   # Morphological operation to detect vertical lines from an image
-  img_temp1 <- cv2$erode(img_bin%>% reticulate::np_array(dtype = "uint8"), verticle_kernel, iterations=3L)%>%
-    reticulate::np_array(dtype = "uint8")
-  verticle_lines_img <- cv2$dilate(img_temp1, verticle_kernel, iterations=3L)%>%
-    reticulate::np_array(dtype = "uint8")
+  img_temp1_1 <- Rvision::morph(img_bin1, operation = 'erode',
+                            kernel = verticle_kernel1, iterations = 3)
+  
+  verticle_lines_img1 <- Rvision::morph(img_temp1_1, operation = 'dilate',
+                            kernel = verticle_kernel1, iterations = 3)
   #cv2$imwrite("verticle_lines.jpg",verticle_lines_img)
   # Morphological operation to detect horizontal lines from an image
-  img_temp2 <- cv2$erode(img_bin %>% reticulate::np_array(dtype = "uint8"), hori_kernel, iterations=3L)%>%
-    reticulate::np_array(dtype = "uint8")
-  horizontal_lines_img <- cv2$dilate(img_temp2, hori_kernel, iterations=3L)%>%
-    reticulate::np_array(dtype = "uint8")
+  img_temp2_1 <- Rvision::morph(img_bin1, operation = 'erode',
+                                kernel = hori_kernel1, iterations = 3)
+  
+  horizontal_lines_img1 <- Rvision::morph(img_temp2_1, operation = 'dilate',
+                            kernel = hori_kernel1, iterations = 3)
   #cv2$imwrite("horizontal_lines.jpg",horizontal_lines_img)
   # Weighting parameters, this will decide the quantity of an image to be added to make a new image.
   alpha <- 0.5
   beta <- 1.0 - alpha
   # This function helps to add two image with specific weight parameter to get a third image as summation of two image.
-  img_final_bin <- cv2$addWeighted(verticle_lines_img, alpha,
-                                   horizontal_lines_img, beta, 0.0)
-  dim1 <- dim(img_final_bin)
-  img_final_bin <- cv2$erode(matrix(bitwNot(img_final_bin), nrow = dim1[1]) %>%
-                               reticulate::np_array(dtype = "uint8"),
-                             kernel, iterations=2L) %>% reticulate::np_array(dtype = "uint8")
-  c(thresh, img_final_bin) %<-% cv2$threshold(img_final_bin, 128,255,
-                                              bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
+  img_final_bin1 <- Rvision::addWeighted(verticle_lines_img1, 
+                      horizontal_lines_img1, c(alpha, beta))
+  dim1_1 <- dim(img_final_bin1)
+  
+  mat <- matrix(bitwNot(img_final_bin1$toR()), nrow = dim1[1])
+  dim(mat) <- c(dim(mat), 1)
+  img_final_bin1 <- Rvision::morph(Rvision::image(mat), 
+                            operation = 'erode', kernel = kernel1, iterations = 2)
+  
+  img_final_bin1 <- Rvision::adaptiveThreshold(img_final_bin1, 
+                      threshold_type ='binary')
+  
+  img_final_bin1 <- extend_horizontal_lines(img_final_bin1)
   #cv2$imwrite("img_final_bin.jpg",img_final_bin)
   # Find contours for image, which will detect all the boxes
-  c(contours, hierarchy) %<-% cv2$findContours(img_final_bin%>% reticulate::np_array(dtype = "uint8"),
-                                               cv2$RETR_TREE, cv2$CHAIN_APPROX_SIMPLE)
-  c(contours, boundingBoxes) %<-% sort_contours(contours, "top-to-bottom", hmax = hmax)
+  c(contours1, hierarchy1) %<-% Rvision::findContours(img_final_bin1,
+                                      mode = "tree", method = 'simple')
+  contours1 <- base::split(contours1, contours1$id)
+  c(contours1, boundingBoxes1) %<-%  sort_contoursR(contours1, 
+                                "top-to-bottom", hmax = hmax, img_max_y = dim(img1)[1])
+
   #bounds <-  get_crop_bounds(contours, hmax)
-  return(list(img, img_bin, img_final_bin, contours, boundingBoxes, hierarchy))
+  return(list(img1, img_bin1, img_final_bin1, contours1, boundingBoxes1, hierarchy1))
+}
+
+#' @title sort contours
+#' @param cnts contours
+#' @param method 'left-to-right' or 'bottom-to-top'
+#' @param hmax max height to include
+#' @param img_max_y the max y variable of image
+#' @export
+sort_contoursR <- function(cnts, method="left-to-right", hmax = 100, img_max_y){
+  # initialize the reverse flag and sort index
+  reverse <-  F
+  i <-  'x'
+  # handle if we need to sort in reverse
+  if (method == "right-to-left" | method == "bottom-to-top") reverse = T
+  # handle if we are sorting against the y-coordinate rather than
+  # the x-coordinate of the bounding box
+  if (method == "top-to-bottom" | method == "bottom-to-top") i = 'y'
+  # construct the list of bounding boxes and sort them from top to
+  # bottom
+  boundingBoxes <-  1:length(cnts) %>% purrr::map_df(function(y) {
+    boundingRect(cnts[[y]], img_max_y) %>% dplyr::mutate(cnum = !!y)
+  }) %>% dplyr::arrange_at(i)
+  if (reverse)  boundingBoxes <-  boundingBoxes %>% .[nrow(.):1, ]
+  boundingBoxes <- boundingBoxes %>% dplyr::filter(h < hmax, h > 20)
+
+  return(list(cnts[boundingBoxes$cnum], boundingBoxes))
+}
+  
+#' @title remove non black and white color from an image to remove handwritten
+#' @param img_file the file path of the image
+#' @param min_clr minimum color number to filter
+#' @param max_clr maximum color number to filter
+#' @export
+remove_colorR <- function(img_file, min_clr = 100, max_clr = 250) {
+  if ("Rcpp_Image" %in% class(img_file)) {
+    image <- img_file$toR()
+  } else {
+    image <- Rvision::image(img_file)
+    image <- image$toR()
+  }
+  
+  ch1 <- which(image[,,1] > min_clr & image[,,1] < max_clr)
+  ch2 <- which(image[,,2] > min_clr & image[,,2] < max_clr)
+  ch3 <- which(image[,,3] > min_clr & image[,,3] < max_clr)
+  ch <- c(ch1, ch2, ch3) %>% unique()
+  image[,,1][ch] <- 255
+  image[,,2][ch] <- 255
+  image[,,3][ch] <- 255
+  
+  image <- Rvision::image(image)
+  image <-  Rvision::changeColorSpace(image, 'GRAY')
+  return(image)
 }

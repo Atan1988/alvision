@@ -20,7 +20,9 @@ Imports:
     magrittr,
     purrr,
     furrr,
-    Rvision
+    Rvision,
+    tesseract,
+    pbapply
 Depends: 
     zeallot
 Suggests: 

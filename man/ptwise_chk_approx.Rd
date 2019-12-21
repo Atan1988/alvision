@@ -4,10 +4,12 @@
 \alias{ptwise_chk_approx}
 \title{check whether two approx points are really close}
 \usage{
-ptwise_chk_approx(approx)
+ptwise_chk_approx(approx, mode = "py")
 }
 \arguments{
 \item{approx}{approximated vertex points of a contour}
+
+\item{mode}{'r' or 'py'}
 }
 \description{
 check whether two approx points are really close

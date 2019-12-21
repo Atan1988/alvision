@@ -2,13 +2,13 @@
 % Please edit documentation in R/utls.R
 \name{get_img_dim}
 \alias{get_img_dim}
-\title{get magick image dimension}
+\title{get cv2 image dimension}
 \usage{
-get_img_dim(x)
+get_img_dim(np)
 }
 \arguments{
-\item{x}{magick image}
+\item{np}{image}
 }
 \description{
-get magick image dimension
+get cv2 image dimension
 }

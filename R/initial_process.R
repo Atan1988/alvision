@@ -64,17 +64,14 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
      scale <- sqrt(file_size_limit / img_sz)
      sz <- floor(raw_dim * scale) %>% as.integer()
 
-     grayed1 %>% 
-       Rvision::resize(height = sz[1], width = sz[2]) %>% 
-       Rvision::write.Image(resize_fl)
-
+     grayed1 <- grayed1 %>% 
+       Rvision::resize(height = sz[1], width = sz[2]) 
+     
+     grayed1 %>% Rvision::write.Image(resize_fl)
      ##write out fixed original color image
-     orig_img1 %>% 
-       Rvision::resize(height = sz[1], width = sz[2]) %>% 
-       Rvision::write.Image(resize_fl1)
-     return(c(resize_fl, resize_fl1))
+     orig_img1 <- orig_img1 %>% 
+       Rvision::resize(height = sz[1], width = sz[2])
+     return(list(resize_fl, resize_fl1, grayed1, orig_img1))
   }
-
-  Rvision::write.Image(orig_img1, resize_fl1)
-  return(c(resize_fl, resize_fl1))
+  return(list(resize_fl, resize_fl1, grayed1, orig_img1))
 }

@@ -140,22 +140,29 @@ get_img_dim <- function(np) {
 
 #'@title check whether two approx points are really close
 #'@param approx approximated vertex points of a contour
+#'@param mode  'r' or 'py'
 #'@export
-ptwise_chk_approx <- function(approx) {
-  ptdf <- tibble::tibble(
-    x = approx[,,1],
-    y = approx[,,2]
-  ) %>%
+ptwise_chk_approx <- function(approx, mode = 'py') {
+  if(mode == 'py') {
+    ptdf <- tibble::tibble(
+      x = approx[,,1],
+      y = approx[,,2]
+    ) 
+  } else {
+    ptdf <- as_tibble(approx[,c('x', 'y')])
+  }
+  
+  ptdf <- ptdf %>%
     dplyr::mutate(
       nwdist = sqrt((x - min(x))^2 + (y - min(y))^2),
       nedist = sqrt((x - max(x))^2 + (y - min(y))^2),
       swdist = sqrt((x - min(x))^2 + (y - max(y))^2),
       sedist = sqrt((x - max(x))^2 + (y - max(y))^2)
     )
-  nw <- ptdf %>% dplyr::filter(nwdist == min(nwdist))
-  ne <- ptdf %>% dplyr::filter(nedist == min(nedist))
-  sw <- ptdf %>% dplyr::filter(swdist == min(swdist))
-  se <- ptdf %>% dplyr::filter(sedist == min(sedist))
+  nw <- ptdf %>% dplyr::filter(nwdist == min(nwdist)) %>% .[1, ]
+  ne <- ptdf %>% dplyr::filter(nedist == min(nedist)) %>% .[1, ]
+  sw <- ptdf %>% dplyr::filter(swdist == min(swdist)) %>% .[1, ]
+  se <- ptdf %>% dplyr::filter(sedist == min(sedist)) %>% .[1, ]
 
   ##nw and ne at similar hight
   chk1 <- abs(ne$y - nw$y) <= 3
@@ -196,4 +203,43 @@ quick_img_chk <- function(df, img, out_fl = 'new.png') {
 
   if (!is.null(out_fl)) cv2$imwrite(out_fl, new_img)
   return(new_img)
+}
+
+#'@title quick image chk
+#'@param df x, y, w, h df
+#'@param img raw img
+#'@param out_fl output file
+#'@export
+quick_img_chkR <- function(df, img, out_fl = 'new.png') {
+  y <- df$y1; x <- df$x; w <- df$w; h <- df$h
+  new_img <- img[y:(y+h), x:(x+w), ]
+  if(length(dim(new_img)) == 2) dim(new_img)[3] <- 1
+  new_img <- Rvision::image(new_img)
+  if (!is.null(out_fl)) Rvision::write.Image(new_img, out_fl)
+  return(new_img)
+}
+
+#'@title get bounding box of contour matrix
+#'@param cnt_mat contour matrix
+#'@param img_max_y the max y variable of image
+#'@export
+boundingRect <- function(cnt_mat, img_max_y){
+  tibble(x = min(cnt_mat[, 'x']), y1 = min(cnt_mat[, 'y']),
+    w = max(cnt_mat[,'x']) - min(cnt_mat[,'x']), 
+    h = max(cnt_mat[,'y']) - min(cnt_mat[,'y']), y = img_max_y - y1 - h)
+}
+
+#'@title extend lines in case lines are broken
+#'@param img Rvision::image obj
+#'@export
+extend_horizontal_lines <- function(img){
+  img <- img$toR()
+  rows <- apply(img, 1, mean)
+  cols <- apply(img, 2, mean)
+  rows_to_over <- which(rows < 100)
+  cols_to_over <- which(cols < 200); 
+  min_col <- min(cols_to_over); max_col <- max(cols_to_over)
+  img[rows_to_over, min_col:max_col, 1] <- 0
+  img <- Rvision::image(img)
+  return(img)
 }

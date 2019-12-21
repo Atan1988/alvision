@@ -4,8 +4,13 @@
 #'@export
 crop_out_boxes <- function(img_file, hmax){
   # Read the image
-  img <-  cv2$imread(normalizePath(img_file), 0L) %>%
-    reticulate::np_array(dtype = "uint8")
+  if ("numpy.ndarray" %in% class(img_file)) {
+    img <- img_file
+  } else {
+    img <-  cv2$imread(normalizePath(img_file), 0L) %>%
+      reticulate::np_array(dtype = "uint8")
+  }
+ 
   # Thresholding the image
   c(thresh, img_bin) %<-% cv2$threshold(img, 128, 255, bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
   # Invert the image
@@ -42,10 +47,18 @@ crop_out_boxes <- function(img_file, hmax){
   dim1 <- dim(img_final_bin)
   img_final_bin <- cv2$erode(matrix(bitwNot(img_final_bin), nrow = dim1[1]) %>%
                                reticulate::np_array(dtype = "uint8"),
-                             kernel, iterations=2L) %>% reticulate::np_array(dtype = "uint8")
+                             kernel, iterations=2L) %>% 
+                   reticulate::np_array(dtype = "uint8")
   c(thresh, img_final_bin) %<-% cv2$threshold(img_final_bin, 128,255,
-                                              bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
+                              bitwOr(cv2$THRESH_BINARY, cv2$THRESH_OTSU))
+  rows <- apply(img_final_bin, 1, mean)
+  cols <- apply(img_final_bin, 2, mean)
+  rows_to_over <- which(rows < 100)
+  cols_to_over <- which(cols < 200); 
+  min_col <- min(cols_to_over); max_col <- max(cols_to_over)
+  img_final_bin[rows_to_over, min_col:max_col] <- 0
   #cv2$imwrite("img_final_bin.jpg",img_final_bin)
+  #cv2$imwrite("img_final_bin1.jpg",img_final_bin1)
   # Find contours for image, which will detect all the boxes
   c(contours, hierarchy) %<-% cv2$findContours(img_final_bin%>% reticulate::np_array(dtype = "uint8"),
                                                     cv2$RETR_TREE, cv2$CHAIN_APPROX_SIMPLE)
@@ -155,6 +168,11 @@ crop_out_obj <- function(image_file, output_cropped = F, output_dir = NULL) {
 #' @export
 remove_color <- function(img_file, min_clr = 100, max_clr = 250) {
   image <-  cv2$imread(normalizePath(img_file))
+  parent_folder <- dirname(img_file)
+  removed_fl <- file.path(parent_folder,
+                         paste0('removed ',
+                                strsplit(img_file, '/') %>% .[[1]] %>% .[length(.)])
+  ) 
   
   ch1 <- which(image[,,1] > min_clr & image[,,1] < max_clr)
   ch2 <- which(image[,,2] > min_clr & image[,,2] < max_clr)
@@ -164,6 +182,8 @@ remove_color <- function(img_file, min_clr = 100, max_clr = 250) {
   image[,,2][ch] <- 255
   image[,,3][ch] <- 255
 
-  image <- cv2$cvtColor(image%>% reticulate::np_array('uint8'), cv2$COLOR_BGR2GRAY)
-  return(image)
+  image <- cv2$cvtColor(image%>% reticulate::np_array('uint8'), 
+                        cv2$COLOR_BGR2GRAY)%>% reticulate::np_array('uint8')
+  cv2$imwrite(removed_fl, image)
+  return(list(removed_fl, image))
 }

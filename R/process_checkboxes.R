@@ -5,11 +5,10 @@ identify_chkboxes <- function(img_file){
   # Read the image
   #tictoc::tic()
   if (!"numpy.ndarray" %in% class(img_file)) {
-    image <-  cv2$imread(normalizePath(img_file)) %>% reticulate::np_array(dtype = "uint8")
-    gray <- cv2$cvtColor(image, cv2$COLOR_BGR2GRAY) %>% reticulate::np_array(dtype = "uint8")
-  } else {
-    gray <- cv2$cvtColor(img_file, cv2$COLOR_BGR2GRAY) %>%
+    gray <-  cv2$imread(normalizePath(img_file), 0L) %>% 
       reticulate::np_array(dtype = "uint8")
+  } else {
+    gray <- img_file
   }
 
   gray <-  cv2$GaussianBlur(gray, reticulate::tuple(7L, 7L), 0L) %>%
@@ -23,6 +22,7 @@ identify_chkboxes <- function(img_file){
   c(cnts, hirachy) %<-% cv2$findContours(thresh1 %>%
                                            reticulate::np_array(dtype = "uint8"),
                                          cv2$RETR_EXTERNAL, cv2$CHAIN_APPROX_NONE)
+  c(cnts, boundingBoxes) %<-% sort_contours(cnts, "top-to-bottom", hmax = 300)
   #tictoc::toc()
   orig <-  gray
   i <-  0
@@ -37,7 +37,7 @@ identify_chkboxes <- function(img_file){
       approx <- cv2$approxPolyDP(c, 0.05 * peri, T)
       c(x, y, w, h) %<-% cv2$boundingRect(approx)
       aspect_ratio <- w / h
-      if (aspect_ratio < 0.95 | aspect_ratio > 1.05) return(NULL)
+      if (aspect_ratio < 0.90 | aspect_ratio > 1.1) return(NULL)
       sqaure_chk <- ptwise_chk_approx(approx)
       if (sqaure_chk$flag){
         return(c)
