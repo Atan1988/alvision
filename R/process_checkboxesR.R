@@ -125,11 +125,16 @@ get_chkbox_wrapperR <- function(chkbox_df, words_df, lines_df, img, cl = 1) {
                      by = "chkbox_id") %>%
     dplyr::left_join(chkbox_df, by = "chkbox_id")
   
-  question_df1$box <- 1:nrow(question_df1) %>%
-    purrr::map(function(x) { quick_img_chkR(question_df1[x, ], img, NULL)})
-  
+  # question_df1$box <- 1:nrow(question_df1) %>%
+  #   purrr::map(function(x) { box <- quick_img_chkR(question_df1[x, ], img, NULL)})
+  # 
+  # question_df1$box_mu <- 1:nrow(question_df1) %>%
+  #   purrr::map_dbl(function(x) mean(question_df1$box[[x]]$toR())) 
   question_df1$box_mu <- 1:nrow(question_df1) %>%
-    purrr::map_dbl(function(x) mean(question_df1$box[[x]]$toR())) 
+      pbapply::pblapply(function(x) { 
+        box <- quick_img_chkR(question_df1[x, ], img, NULL)
+        return(mean(box$toR()))
+      }, cl = cl) %>% unlist()
   
   question_df1 <- question_df1 %>%
     dplyr::mutate(selected = ifelse(box_mu < mean(box_mu), T, F))

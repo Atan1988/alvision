@@ -48,7 +48,7 @@ chkbox_cnts %>% dplyr::filter(h < cutoff) -> chkbox_cnts1
 tictoc::tic()
 question_df1 <- get_chkbox_wrapperR(chkbox_df = chkbox_cnts2,
                             words_df = res_lines_df, lines_df = res_lines_only_df,
-                            img = removed_img, cl = 5)
+                            img = main_img, cl = 5)
 tictoc::toc()
 
 ##match results from main azure api push to the cropped boxes
