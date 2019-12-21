@@ -4,7 +4,11 @@
 #'@export
 crop_out_boxesR <- function(img_file, hmax){
   # Read the image
-  img1 <- Rvision::image(img_file)
+  if ("Rcpp_Image" %in% class(img_file)) {
+    img1 <- img_file
+  } else {
+    img1 <- Rvision::image(img_file)
+  }
 
   # Thresholding the image
   img_bin1 <- Rvision::adaptiveThreshold(img1)
@@ -39,7 +43,7 @@ crop_out_boxesR <- function(img_file, hmax){
                       horizontal_lines_img1, c(alpha, beta))
   dim1_1 <- dim(img_final_bin1)
   
-  mat <- matrix(bitwNot(img_final_bin1$toR()), nrow = dim1[1])
+  mat <- matrix(bitwNot(img_final_bin1$toR()), nrow = dim1_1[1])
   dim(mat) <- c(dim(mat), 1)
   img_final_bin1 <- Rvision::morph(Rvision::image(mat), 
                             operation = 'erode', kernel = kernel1, iterations = 2)

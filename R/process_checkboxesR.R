@@ -18,8 +18,6 @@ identify_chkboxesR <- function(img_file){
                                   mode = "external", method = 'none')
   cnts1 <- base::split(cnts1, cnts1$id)
   img_max_y <- dim(gray)[1]
-  c(cnts1, boundingBoxes1) %<-%  sort_contoursR(cnts1, 
-                    "top-to-bottom", hmax = hmax, img_max_y = img_max_y)
   
   #tictoc::toc()
   orig <-  gray
@@ -104,4 +102,37 @@ identify_chkboxes_by_partsR <- function(bounds_df, removed_img, cl = 1) {
         return(txt)
       }, cl = cl) %>% unlist() %>% gsub('\\\n', "", .) %>% stringr::str_squish()
   return(chkbox_cnts1)
+}
+
+#'@title get checkboxes questions, options, selections
+#'@param chkbox_df data frame with checkbox information
+#'@param words_df  data frame with all the words info from azure
+#'@param lines_df  data frame with all the lines info from azure
+#'@param img       the image np array of the page
+#'@param cl        number of cores being used
+#'@export
+get_chkbox_wrapperR <- function(chkbox_df, words_df, lines_df, img, cl = 1) {
+  
+  ##find out the question
+  question_df <- get_chkbox_questions(chkbox_df = chkbox_df,
+                                      lines_df = lines_df)
+  ##find choice options
+  preceding_word_df <- get_chkbox_options(chkbox_df = chkbox_df,
+                                          words_df = words_df, question_df = question_df)
+  
+  question_df1 <- question_df %>%
+    dplyr::left_join(preceding_word_df %>% dplyr::select(chkbox_id, text),
+                     by = "chkbox_id") %>%
+    dplyr::left_join(chkbox_df, by = "chkbox_id")
+  
+  question_df1$box <- 1:nrow(question_df1) %>%
+    purrr::map(function(x) { quick_img_chkR(question_df1[x, ], img, NULL)})
+  
+  question_df1$box_mu <- 1:nrow(question_df1) %>%
+    purrr::map_dbl(function(x) mean(question_df1$box[[x]]$toR())) 
+  
+  question_df1 <- question_df1 %>%
+    dplyr::mutate(selected = ifelse(box_mu < mean(box_mu), T, F))
+  
+  return(question_df1)
 }
