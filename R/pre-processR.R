@@ -61,7 +61,8 @@ crop_out_boxesR <- function(img_file, hmax){
                                 "top-to-bottom", hmax = hmax, img_max_y = dim(img1)[1])
 
   #bounds <-  get_crop_bounds(contours, hmax)
-  return(list(img1, img_bin1, img_final_bin1, contours1, boundingBoxes1, hierarchy1))
+  #return(list(img1, img_bin1, img_final_bin1, contours1, boundingBoxes1, hierarchy1))
+  return(list(contours = contours1, bounds_df = boundingBoxes1))
 }
 
 #' @title sort contours

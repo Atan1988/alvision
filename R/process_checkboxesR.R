@@ -75,7 +75,10 @@ identify_chkboxes_by_partsR <- function(bounds_df, removed_img, cl = 1) {
       if (!is.null(res)) res <- res %>%
         dplyr::mutate(x = x + row$x, y = y + row$y) %>% 
         dplyr::mutate(y1 = img_max_y - y - h)
-    }, cl = cl) %>% dplyr::bind_rows() %>%
+    }, cl = cl) %>% dplyr::bind_rows() 
+  
+  if (nrow(chkbox_cnts) == 0) return(res_main)
+  chkbox_cnts <-  chkbox_cnts %>%
     dplyr::mutate(chkbox_id = seq(1, dplyr::n(), 1))
   
   if (is.null(res_main)) return(chkbox_cnts)

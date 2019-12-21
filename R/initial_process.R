@@ -37,7 +37,10 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
   ###first convert to gray
   orig_img1 <- Rvision::image(img_file)
   grayed1 <- Rvision::changeColorSpace(orig_img1, 'GRAY')
-
+  
+  ###chk blank page
+  gray_img_mean <- mean(grayed1$toR())
+  if (gray_img_mean > 254.9) return(NULL)
   ###check dimension
   raw_dim <- grayed1$dim()
   
@@ -71,7 +74,9 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
      ##write out fixed original color image
      orig_img1 <- orig_img1 %>% 
        Rvision::resize(height = sz[1], width = sz[2])
-     return(list(resize_fl, resize_fl1, grayed1, orig_img1))
+     return(list(gray_fl = resize_fl, clr_fl = resize_fl1, 
+                 gray_img = grayed1, clr_img = orig_img1))
   }
-  return(list(resize_fl, resize_fl1, grayed1, orig_img1))
+  return(list(gray_fl = resize_fl, clr_fl = resize_fl1, 
+              gray_img = grayed1, clr_img = orig_img1))
 }
