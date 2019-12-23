@@ -5,7 +5,7 @@ library(tictoc)
 #test docker
 #reticulate::use_condaenv('computer_vision')
 reticulate::use_virtualenv('/opt/virtualenvs/r-tensorflow')
-azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
+azure_creds <- readxl::read_excel("inst/creds/azure creds.xlsx")
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
 pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"; 

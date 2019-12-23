@@ -16,3 +16,4 @@ inst/test_example_scripts
 inst/doc
 *.pyc
 *.db
+*.xlsx
