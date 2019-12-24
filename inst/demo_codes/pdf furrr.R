@@ -11,7 +11,7 @@ cropped_tm_dir <- 'inst/data/tmp_cropped/'
 pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"; 
 hmax = 300; cropped_tm_dir; azure_creds;
 box_push_to_az = F; box_highlight = F; remove_fl = F; dpi = 400
-main_cl <- 2; sub_cl <- 3
+main_cl <- 1; sub_cl <- 3
 
 tic()
 tic()
@@ -20,12 +20,13 @@ toc()
 
 tic()
 resized_images <- pbapply::pblapply(image_files, resize_png, cl = 1)  
-toc()
 resized_images[sapply(resized_images, is.null)] <- NULL
+toc()
 
 tic()
 removed_images <- pbapply::pblapply(resized_images, 
-                    function(x) {remove_colorR(x[[4]])}, cl = 1)
+                    function(x) {remove_colorR(x[[4]])}, cl = main_cl)
+removed_images <- purrr::map(removed_images, ~Rvision::image(.))
 toc()
 
 tic()
@@ -48,6 +49,7 @@ toc()
 tic()
 res_lines_df_list <- pbapply::pblapply(res_lines_list, az_lines_to_df, cl = 1)
 toc()
+
 tic()
 res_lines_only_df_list <- pbapply::pblapply(res_lines_list, 
               function(x)az_words_to_df(x, type = 'line'), cl = 1)
@@ -56,13 +58,13 @@ toc()
 tictoc::tic()
 #c(img, img_bin, img_final_bin, contours, bounds_df, hierarchy)
 cropped_objs <- pbapply::pblapply(removed_images, 
-                  function(x) crop_out_boxesR(x, hmax = 300), cl = 1)
+                  function(x) crop_out_boxesR(x, hmax = 300), cl = main_cl)
 tictoc::toc()
 ###get checkbox questions
 tictoc::tic()
 chkbox_cnts <-  pbapply::pblapply(1:length(removed_images),
     function(x) {identify_chkboxes_by_partsR(cropped_objs[[x]]$bounds_df, 
-                        removed_images[[x]], cl = 3)},  cl =2)
+                        removed_images[[x]], cl = 1)},  cl = main_cl)
 tictoc::toc()
 
 tic()
@@ -82,7 +84,7 @@ question_df1 <- pbapply::pblapply(1:length(chkbox_cnts1),
                                      words_df = res_lines_df_list[[x]], 
                                      lines_df = res_lines_only_df_list[[x]],
                                      img = resized_images[[x]]$gray_img, cl = 5) 
-}, cl = 1)
+}, cl = main_cl)
 toc()
 
 

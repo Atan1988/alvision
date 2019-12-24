@@ -114,5 +114,5 @@ remove_colorR <- function(img_file, min_clr = 100, max_clr = 250) {
   
   image <- Rvision::image(image)
   image <-  Rvision::changeColorSpace(image, 'GRAY')
-  return(image)
+  return(image$toR())
 }
