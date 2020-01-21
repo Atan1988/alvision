@@ -3,22 +3,28 @@
 #' @param res_lines lines result from the azure api reading the whole page
 #' @export
 az_to_cv2_box <- function(bounds_df, res_lines) {
-  bounds_list <- bbox_df_to_c(bounds_df)
 
-  match_idx <- res_lines %>% purrr::map(~pts_to_wh(.$boundingBox)) %>%
-    purrr::map_dbl(function(x) {
-      res <- bounds_list %>% purrr::map_lgl(~chk_box_in(., x, 10)) %>% which(.)
-      if (length(res) == 0) return(NA)
-      return(res[1])
-    })
-
-  bounds_df$az <- 1:nrow(bounds_df) %>%  purrr::map(
-    function(x) {
-      idx <- which(match_idx == x)
-      if (length(idx) == 0) return(list())
-      return(res_lines[idx])
-    }
-  )
+  if (nrow(bounds_df) == 0) {
+    match_idx <- rep(NA, length(res_lines))
+  } else {
+    bounds_list <- bbox_df_to_c(bounds_df)
+    
+    match_idx <- res_lines %>% purrr::map(~pts_to_wh(.$boundingBox)) %>%
+      purrr::map_dbl(function(x) {
+        res <- bounds_list %>% purrr::map_lgl(~chk_box_in(., x, 10)) %>% which(.)
+        if (length(res) == 0) return(NA)
+        return(res[1])
+      })
+    
+    bounds_df$az <- 1:nrow(bounds_df) %>%  purrr::map(
+      function(x) {
+        idx <- which(match_idx == x)
+        if (length(idx) == 0) return(list())
+        return(res_lines[idx])
+      }
+    )
+  }
+ 
 
   not_matched_idx <- which(is.na(match_idx))
   not_matched_bounds_df <- not_matched_idx %>%

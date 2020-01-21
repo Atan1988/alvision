@@ -239,6 +239,7 @@ extend_horizontal_lines <- function(img){
   rows_to_over <- which(rows < 100)
   cols_to_over <- which(cols < 200); 
   min_col <- min(cols_to_over); max_col <- max(cols_to_over)
+  if (is.infinite(min_col) | is.infinite(max_col)) return(Rvision::image(img))
   img[rows_to_over, min_col:max_col, 1] <- 0
   img <- Rvision::image(img)
   return(img)

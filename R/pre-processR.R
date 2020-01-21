@@ -43,8 +43,16 @@ crop_out_boxesR <- function(img_file, hmax){
                       horizontal_lines_img1, c(alpha, beta))
   dim1_1 <- dim(img_final_bin1)
   
-  mat <- matrix(bitwNot(img_final_bin1$toR()), nrow = dim1_1[1])
+  img_mat <- img_final_bin1$toR()
+  mat <- matrix(bitwNot(img_mat), nrow = dim1_1[1])
   dim(mat) <- c(dim(mat), 1)
+  
+  if (mean(mat) == -1){
+    boundingBoxes1 <- tibble::tibble(x = 1, y1 = 1, w = 1, h = 1, y = 1, cnum = as.integer(1)) %>% .[0, ]
+    contours1 <- list()
+    return(list(contours = contours1, bounds_df = boundingBoxes1))
+  }
+  
   img_final_bin1 <- Rvision::morph(Rvision::image(mat), 
                             operation = 'erode', kernel = kernel1, iterations = 2)
   

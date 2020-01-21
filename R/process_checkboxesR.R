@@ -67,6 +67,11 @@ identify_chkboxesR <- function(img_file){
 identify_chkboxes_by_partsR <- function(bounds_df, removed_img, cl = 1) {
   res_main <- removed_img %>% identify_chkboxesR() #%>% arrange(y, x)
   img_max_y <- dim(removed_img)[1]
+  
+  if (nrow(bounds_df) == 0) {
+    return(res_main)  
+  }
+  
   chkbox_cnts <- 1:nrow(bounds_df) %>%
     pbapply::pblapply(function(l) {
       row <- bounds_df[l, ]
@@ -115,6 +120,8 @@ identify_chkboxes_by_partsR <- function(bounds_df, removed_img, cl = 1) {
 #'@param cl        number of cores being used
 #'@export
 get_chkbox_wrapperR <- function(chkbox_df, words_df, lines_df, img, cl = 1) {
+  
+  if (is.null(chkbox_df)) return(tibble::tibble())
   
   ##find out the question
   question_df <- get_chkbox_questions(chkbox_df = chkbox_df,

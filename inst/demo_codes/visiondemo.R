@@ -6,34 +6,35 @@ library(alvision)
 #test docker
 #reticulate::use_condaenv('computer_vision')
 reticulate::use_virtualenv('/opt/virtualenvs/r-tensorflow')
-azure_creds <- readr::read_rds('inst/creds/azure credential.rds')
+azure_creds <- readxl::read_excel("inst/creds/azure creds.xlsx") %>% as.list()
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
-pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
-# image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
-# saveRDS(image_files, 'image_files.rds')
+#pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
+pdf_file <- 'inst/raw_data/tmp.pdf'
+image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
+saveRDS(image_files, 'image_files.rds')
 image_files <- readr::read_rds('image_files.rds')
 
-tictoc::tic()
-results <- image_files %>%
-  purrr::map(~ocr_img_wrapper(img_file = .,
-                                     hmax = 300, cropped_tm_dir = cropped_tm_dir,
-                                     azure_creds = azure_creds, box_push_to_az = F,
-                                     box_highlight = F, remove_fl = F))
-tictoc::toc()
+# tictoc::tic()
+# results <- image_files %>%
+#   purrr::map(~ocr_img_wrapper(img_file = .,
+#                                      hmax = 300, cropped_tm_dir = cropped_tm_dir,
+#                                      azure_creds = azure_creds, box_push_to_az = F,
+#                                      box_highlight = F, remove_fl = F))
+# tictoc::toc()
 
 img_file <- image_files[1]
 
 #Read the image
 tictoc::tic()
-c(main_img, color_img) %<-% resize_png(img_file)
+c(gray_fl, clr_fl, main_img, color_img) %<-% resize_png(img_file)
 tictoc::toc()
 
 tictoc::tic()
-# analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
-#                           endpoint = azure_creds$endpoint,
-#                           image_path = normalizePath(main_img ))
-# saveRDS(analysis_res, 'analysis_res.rds')
+analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
+                          endpoint = azure_creds$endpoint,
+                          image_path = normalizePath(gray_fl))
+saveRDS(analysis_res, 'analysis_res.rds')
 analysis_res <- readr::read_rds('analysis_res.rds')
 analysis_res$recognitionResult$lines -> res_lines
 tictoc::toc()
@@ -44,7 +45,7 @@ res_lines_only_df <- az_words_to_df(res_lines, type = 'line')
 tictoc::toc()
 
 tictoc::tic()
-crop_out_boxes(main_img, hmax = 300) %->% c(img, img_bin, img_final_bin,
+crop_out_boxes(gray_fl, hmax = 300) %->% c(img, img_bin, img_final_bin,
                                       contours, bounds_df, hierarchy)
 tictoc::toc()
 
@@ -111,10 +112,8 @@ library(profvis)
 
 
 tictoc::tic()
-#profvis({
 results <- ocr_pdf(pdf_file = pdf_file, hmax = 300, cropped_tm_dir, azure_creds,
                    box_push_to_az = F, box_highlight = F, remove_fl = F, dpi = 400)
-#})
 tictoc::toc()
 
 texts <- get_text_df(results)

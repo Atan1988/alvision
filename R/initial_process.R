@@ -56,9 +56,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
   }
 
   ##write gray image out
-  tic()
   Rvision::write.Image(grayed1, resize_fl)
-  toc()
   ###check image size
   img_sz <- file.size(resize_fl) / (1024^2)
 

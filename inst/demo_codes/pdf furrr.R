@@ -8,7 +8,7 @@ reticulate::use_virtualenv('/opt/virtualenvs/r-tensorflow')
 azure_creds <- readxl::read_excel("inst/creds/azure creds.xlsx")
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
-pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"; 
+pdf_file <- "inst/raw_data/tmp.pdf"; 
 hmax = 300; cropped_tm_dir; azure_creds;
 box_push_to_az = F; box_highlight = F; remove_fl = F; dpi = 400
 main_cl <- 1; sub_cl <- 3
@@ -70,6 +70,7 @@ tictoc::toc()
 tic()
 chkbox_cnts1 <- pbapply::pblapply(chkbox_cnts, 
                   function(x){
+                    if (is.null(x)) return(x)
                     cutoff <- (x$h %>% mean()) * 0.95
                     x %>% dplyr::filter(h >= cutoff) -> x2
                     x %>% dplyr::filter(h < cutoff) -> x1
