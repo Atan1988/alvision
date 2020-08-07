@@ -2,6 +2,7 @@
 library(dplyr)
 library(zeallot)
 library(alvision)
+library(pdftools)
 
 #test docker
 #reticulate::use_condaenv('computer_vision')
@@ -9,8 +10,8 @@ reticulate::use_virtualenv('/opt/virtualenvs/r-tensorflow')
 azure_creds <- readxl::read_excel("inst/creds/azure creds.xlsx") %>% as.list()
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
-#pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
-pdf_file <- 'inst/raw_data/tmp.pdf'
+pdf_file <- "inst/raw_data/ACE Contrractors Pollution.pdf"
+#pdf_file <- 'inst/raw_data/tmp.pdf'
 image_files <- crt_png_from_pdf(pdf_file = pdf_file, pages = NULL, dpi = 400)
 saveRDS(image_files, 'image_files.rds')
 image_files <- readr::read_rds('image_files.rds')

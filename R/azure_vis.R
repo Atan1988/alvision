@@ -8,7 +8,7 @@ azure_post <- function(subscription_key, endpoint, image_path){
   text_recognition_url <- paste0(vision_base_url, "recognizeText")
   
   #check the size of the image if not meeting 50X50, resize it
-  loaded_img <- cv2$imread(image_path)
+  loaded_img <- cv2$imread(image_path, 0L)
   dims <- dim(loaded_img)
   if (min(dims[1:2]) < 50) {
     scale <- 50 / min(dims[1:2]) 
