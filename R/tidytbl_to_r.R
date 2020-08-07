@@ -1,11 +1,11 @@
 #' @title tidy result to row and column table
 #' @param tidy_res tidied result, could be from azure after tidying or pdf_data
-#' @param row_skip row to skip
 #' @param col_header column header to help identifying the tabular structure
+#' @param bw_scale scaling on height when determine row locations
 #' @export
-tidytbl_to_r <- function(tidy_res, col_header) {
+tidytbl_to_r <- function(tidy_res, col_header, bw_scale = 5) {
   mean_h <- mean(tidy_res$h)
-  dens <- density(tidy_res$y, bw = mean_h/10)
+  dens <- density(tidy_res$y, bw = mean_h/bw_scale)
   dens_tibbl <- tibble::tibble(x = dens$x, y = dens$y) %>% 
     dplyr::mutate(locl_max = slider::slide_dbl(y, 
                                                ~max(.x), .before = 2, .after = 2)) %>% 

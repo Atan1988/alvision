@@ -12,23 +12,46 @@ cropped_tm_dir <- 'inst/data/tmp_cropped/'
 pdf_file <- "inst/raw_data/Large Loss Detail_Redacted.pdf"
 #pdf_file <- 'inst/raw_data/tmp.pdf'
 
-hmax = 300; cropped_tm_dir; azure_creds;
-box_push_to_az = F; box_highlight = F; remove_fl = F; dpi = 400
-main_cl <- 1; sub_cl <- 3
-
-
-imgs <- pdftools::pdf_convert(pdf_file, dpi = 400)
+imgs <- pdftools::pdf_convert(pdf_file, dpi = 400, pages = 1:17)
 tictoc::tic()
-imgs %>% purrr::map(function(im_fl)
-  imager::load.image(im_fl ) %>% imager::imrotate(90) %>% imager::grayscale() %>% imager::save.image(im_fl))
+imgs %>% purrr::map(function(im_fl){
+  im <- imager::load.image(im_fl ) %>% imager::imrotate(90) %>% imager::grayscale() 
+  dims <- dim(im)
+  if (max(dims)>4000){
+    scale <- 4000 / max(dims)
+    im <- im %>% imager::resize(size_x = scale * dims[1], size_y = scale * dims[2])
+  }
+  im %>% imager::save.image(im_fl)
+})
 tictoc::toc()
 
 im_fl <- imgs[1]
+col_header <- c('Suffix', 'Lust', "Type", 'Site', 'Owner', "Name", 'Reserve', 'Paid', 
+                'Incurred', 'Hours', 'S')
+MO_large_loss_read <- function(im_fl, col_header){
+  analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
+                            endpoint = azure_creds$endpoint,
+                            image_path = normalizePath(im_fl))
+  saveRDS(analysis_res, 'analysis_res.rds')
+  analysis_res <- readr::read_rds('analysis_res.rds')
+  analysis_res$recognitionResult$lines -> res_lines
+  tidy_az_res <- alvision::az_lines_to_df(res_lines)
+  res <- tidytbl_to_r(tidy_az_res, col_header)
+  colnames(res) <- tolower(c('row_id', as.vector(res[1, ]) %>% .[-1]))
+  res <- res[-1, ]
+  colnames(res) <- make.names(stringr::str_squish(colnames(res)), unique = T)
+  return(res)
+}
+
+MO_large_loss_read_safely <- purrr::safely(MO_large_loss_read)
+
 tictoc::tic()
-analysis_res <- azure_vis(subscription_key = azure_creds$subscription_key,
-                          endpoint = azure_creds$endpoint,
-                          image_path = normalizePath(im_fl))
-saveRDS(analysis_res, 'analysis_res.rds')
-analysis_res <- readr::read_rds('analysis_res.rds')
-analysis_res$recognitionResult$lines -> res_lines
+large_loss_df <- imgs[1:17] %>% 
+  purrr::map(function(x){
+    res <- MO_large_loss_read_safely(x, col_header)
+    result <- res$result
+    if (is.null(result)) {print(x); print(res$error)}
+    if (!is.null(result)) result <- result %>% dplyr::mutate(pg = x)
+    return(result)
+  }) %>% dplyr::bind_rows()
 tictoc::toc()
