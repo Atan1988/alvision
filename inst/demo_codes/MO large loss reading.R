@@ -4,8 +4,8 @@ library(tictoc)
 library(imager)
 
 #test docker
-reticulate::use_condaenv('computer_vision')
-#reticulate::use_virtualenv('/opt/virtualenvs/r-tensorflow')
+#reticulate::use_condaenv('computer_vision')
+reticulate::use_virtualenv('~/venvs/computer_vision')
 azure_creds <- readxl::read_excel("inst/creds/azure creds.xlsx")
 cropped_tm_dir <- 'inst/data/tmp_cropped/'
 
