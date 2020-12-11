@@ -10,6 +10,7 @@ crop_out_boxesR <- function(img_file, hmax){
     img1 <- Rvision::image(img_file)
   }
 
+  img1 <- Rvision::changeBitDepth(img1, '8U')
   # Thresholding the image
   img_bin1 <- Rvision::adaptiveThreshold(img1)
  
@@ -44,7 +45,8 @@ crop_out_boxesR <- function(img_file, hmax){
   dim1_1 <- dim(img_final_bin1)
   
   img_mat <- img_final_bin1$toR()
-  mat <- matrix(bitwNot(img_mat), nrow = dim1_1[1])
+  #mat <- matrix(bitwNot(img_mat), nrow = dim1_1[1])
+  mat <- matrix(255 - img_mat, nrow = dim1_1[1])
   dim(mat) <- c(dim(mat), 1)
   
   if (mean(mat) == -1){
@@ -53,8 +55,10 @@ crop_out_boxesR <- function(img_file, hmax){
     return(list(contours = contours1, bounds_df = boundingBoxes1))
   }
   
-  img_final_bin1 <- Rvision::morph(Rvision::image(mat), 
-                            operation = 'erode', kernel = kernel1, iterations = 2)
+  img_final_bin1 <- Rvision::morph(Rvision::image(mat),
+                           operation = 'erode', kernel = kernel1, iterations = 2)
+  #img_final_bin1  <- Rvision::image(img_mat)
+  img_final_bin1 <- Rvision::changeBitDepth(img_final_bin1, '8U')
   
   img_final_bin1 <- Rvision::adaptiveThreshold(img_final_bin1, 
                       threshold_type ='binary')
@@ -62,6 +66,7 @@ crop_out_boxesR <- function(img_file, hmax){
   img_final_bin1 <- extend_horizontal_lines(img_final_bin1)
   #cv2$imwrite("img_final_bin.jpg",img_final_bin)
   # Find contours for image, which will detect all the boxes
+  img_final_bin1 <- Rvision::changeBitDepth(img_final_bin1, '8U')
   c(contours1, hierarchy1) %<-% Rvision::findContours(img_final_bin1,
                                       mode = "tree", method = 'simple')
   contours1 <- base::split(contours1, contours1$id)
@@ -122,5 +127,6 @@ remove_colorR <- function(img_file, min_clr = 100, max_clr = 250) {
   
   image <- Rvision::image(image)
   image <-  Rvision::changeColorSpace(image, 'GRAY')
+  #return(image$toR())
   return(image$toR())
 }

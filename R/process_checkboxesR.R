@@ -12,7 +12,7 @@ identify_chkboxesR <- function(img_file){
   
   gray_blur <-  Rvision::gaussianBlur(gray, k_height = 7, k_width = 7, 0)
   # threshold the image
-  thresh1 <- Rvision::adaptiveThreshold(gray_blur, threshold_type ='inverse')
+  thresh1 <- Rvision::adaptiveThreshold(Rvision::changeBitDepth(gray_blur, '8U'), threshold_type ='inverse')
   # find contours in the image
   c(cnts1, hirachy1) %<-% Rvision::findContours( thresh1,
                                   mode = "external", method = 'none')
@@ -131,7 +131,7 @@ get_chkbox_wrapperR <- function(chkbox_df, words_df, lines_df, img, cl = 1) {
                                           words_df = words_df, question_df = question_df)
   
   question_df1 <- question_df %>%
-    dplyr::left_join(preceding_word_df %>% dplyr::select(chkbox_id, text),
+    dplyr::left_join(preceding_word_df %>% dplyr::select(chkbox_id, pre_text, follow_text),
                      by = "chkbox_id") %>%
     dplyr::left_join(chkbox_df, by = "chkbox_id")
   

@@ -209,10 +209,13 @@ quick_img_chk <- function(df, img, out_fl = 'new.png') {
 #'@param df x, y, w, h df
 #'@param img raw img
 #'@param out_fl output file
+#'@param dev_r how much room to cut into the contour to remove the outside box
 #'@export
-quick_img_chkR <- function(df, img, out_fl = 'new.png') {
+quick_img_chkR <- function(df, img, out_fl = 'new.png', dev_r = 10) {
   y <- df$y1; x <- df$x; w <- df$w; h <- df$h
-  new_img <- img[y:(y+h), x:(x+w), ]
+  vertical_dev <-  round(h/dev_r, 0)
+  horizontal_dev <- round(w/dev_r, 0)
+  new_img <- img[(y + vertical_dev) :(y+h - vertical_dev), (x + horizontal_dev):(x+w - horizontal_dev), ]
   if(length(dim(new_img)) == 2) dim(new_img)[3] <- 1
   new_img <- Rvision::image(new_img)
   if (!is.null(out_fl)) Rvision::write.Image(new_img, out_fl)

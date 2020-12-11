@@ -53,6 +53,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
     orig_img1 <- Rvision::resize(orig_img1, height = dim_sz[1], width = dim_sz[2])
     
     raw_dim <- grayed1$dim()
+    Rvision::write.Image(orig_img1, resize_fl1)
   }
 
   ##write gray image out
@@ -72,6 +73,7 @@ resize_png  <- function(img_file, file_size_limit = 3.8) {
      ##write out fixed original color image
      orig_img1 <- orig_img1 %>% 
        Rvision::resize(height = sz[1], width = sz[2])
+     Rvision::write.Image(orig_img1, resize_fl1)
      return(list(gray_fl = resize_fl, clr_fl = resize_fl1, 
                  gray_img = grayed1, clr_img = orig_img1))
   }
